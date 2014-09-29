@@ -1,7 +1,6 @@
 require 'rack/request'
 require 'json/jwt'
 require 'rack/prxauth/version'
-require 'pry'
 
 module Rack
   class PrxAuth
@@ -19,7 +18,7 @@ module Rack
 
         @app.call(env) unless claims['iss'] == 'auth.prx.org'
 
-        if verify(token)
+        if verified?(token) && !token_expired?(claims) && !cert_expired?(@public_key.certificate)
           env['prx.auth'] = claims
           @app.call(env)
         else
@@ -30,9 +29,9 @@ module Rack
       end
     end
 
-    def verify(token)
+    def verified?(token)
       begin
-        JSON::JWT.decode(token, @public_key)
+        JSON::JWT.decode(token, @public_key.key)
       rescue JSON::JWT::VerificationFailed
         false
       else
@@ -40,9 +39,19 @@ module Rack
       end
     end
 
+    def cert_expired?(certificate)
+      certificate.not_after < Time.now
+    end
+
+    def token_expired?(claims)
+      Time.now.to_i > (claims['iat'] + claims['exp'])
+    end
+
     class PublicKey
       EXPIRES_IN = 43200
       AUTH_URI = URI('https://auth.prx.org/api/v1/certs')
+
+      attr_reader :certificate
 
       def initialize
         @created_at = Time.now
@@ -56,10 +65,14 @@ module Rack
       end
 
       def get_key
+        @certificate = get_certificate
+        @key = @certificate.public_key
+      end
+
+      def get_certificate
         certs = JSON.parse(Net::HTTP.get(AUTH_URI))
         cert_string = certs['certificates'].values[0]
-        certificate = OpenSSL::X509::Certificate.new(cert_string)
-        @key = certificate.public_key
+        OpenSSL::X509::Certificate.new(cert_string)
       end
 
       def key
