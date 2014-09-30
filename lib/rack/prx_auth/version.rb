@@ -1,5 +1,5 @@
 module Rack
-  module Prxauth
+  class PrxAuth
     VERSION = "0.0.1"
   end
 end

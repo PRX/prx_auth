@@ -1,15 +1,15 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'rack/prxauth/version'
+require 'rack/prx_auth/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "rack-prxauth"
-  spec.version       = Rack::Prxauth::VERSION
+  spec.name          = "rack-prx_auth"
+  spec.version       = Rack::PrxAuth::VERSION
   spec.authors       = ["Eve Asher"]
-  spec.email         = ["eve.adele.asher@gmail.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.email         = ["eve@prx.org"]
+  spec.summary       = %q{Rack middleware that verifies and decodes a JWT token and attaches the token's claims to env.}
+  spec.description   = %q{Specific to PRX. Will ignore tokens that were not issued by PRX.}
   spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -20,4 +20,10 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "guard"
+  spec.add_development_dependency "guard-minitest"
+
+  spec.add_dependency "rack"
+  spec.add_dependency "json"
+  spec.add_dependency "json-jwt"
 end
