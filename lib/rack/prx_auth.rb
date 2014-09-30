@@ -12,12 +12,10 @@ module Rack
     end
 
     def call(env)
-      if env['HTTP_AUTHORIZATION'] =~ /\ABearer/
-        token = env['HTTP_AUTHORIZATION'].split[1]
-        claims = JSON::JWT.decode(token, :skip_verification)
+      token = (env['HTTP_AUTHORIZATION'] || 'no token').split[1]
+      claims = decode_token(token)
 
-        @app.call(env) unless claims['iss'] == 'auth.prx.org'
-
+      if claims['iss'] == 'auth.prx.org'
         if verified?(token) && !token_expired?(claims) && !cert_expired?(@public_key.certificate)
           env['prx.auth'] = claims
           @app.call(env)
@@ -26,6 +24,14 @@ module Rack
         end
       else
         @app.call(env)
+      end
+    end
+
+    def decode_token(token)
+      begin
+        JSON::JWT.decode(token, :skip_verification)
+      rescue JSON::JWT::InvalidFormat
+        {}
       end
     end
 

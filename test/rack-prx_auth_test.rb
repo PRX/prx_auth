@@ -6,7 +6,7 @@ require_relative '../lib/rack/prx_auth'
 describe Rack::PrxAuth do
   let(:app) { Proc.new {|env| env } }
   let(:prxauth) { Rack::PrxAuth.new(app) }
-  let(:fake_token) { 'afawefawefawefawegstgnsrtiohnlijbl.ublwjnvrtoign'}
+  let(:fake_token) { 'afawefawefawefawegstgnsrtiohnlijblublwjnvrtoign'}
   let(:env) { {'HTTP_AUTHORIZATION' => 'Bearer ' + fake_token } }
   let(:claims) { {'sub'=>nil, 'exp'=>3600, 'iat'=>Time.now.to_i, 'token_type'=>'bearer', 'scope'=>nil, 'iss'=>'auth.prx.org'} }
 
@@ -23,6 +23,10 @@ describe Rack::PrxAuth do
       JSON::JWT.stub(:decode, claims) do
         prxauth.call(env).must_equal env
       end
+    end
+
+    it 'does nothing if token is invalid' do
+      prxauth.call(env).must_equal env
     end
 
     it 'returns 401 if verification fails' do
