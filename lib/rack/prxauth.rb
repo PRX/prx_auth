@@ -3,7 +3,7 @@ require 'json/jwt'
 require 'rack/prxauth/version'
 
 module Rack
-  class PrxAuth
+  class Prxauth
     attr_reader :public_key
 
     def initialize(app)
@@ -46,6 +46,8 @@ module Rack
     def token_expired?(claims)
       Time.now.to_i > (claims['iat'] + claims['exp'])
     end
+
+
 
     class PublicKey
       EXPIRES_IN = 43200
