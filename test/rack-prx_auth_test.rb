@@ -1,7 +1,7 @@
 require 'minitest/autorun'
 require 'minitest/spec'
 require 'minitest/pride'
-require_relative '../lib/rack/prx_auth'
+require 'rack/prx_auth'
 
 describe Rack::PrxAuth do
   let(:app) { Proc.new {|env| env } }

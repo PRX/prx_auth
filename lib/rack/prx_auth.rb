@@ -1,7 +1,8 @@
 require 'json/jwt'
 require 'rack/prx_auth/version'
-require_relative './public_key'
-require_relative './token_data'
+require 'rack/prx_auth/public_key'
+require 'rack/prx_auth/token_data'
+require 'rack/prx_auth/railtie' if defined?(Rails)
 
 module Rack
   class PrxAuth
