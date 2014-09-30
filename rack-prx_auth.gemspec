@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'rack/prxauth/version'
+require 'rack/prx_auth/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "rack-prxauth"
-  spec.version       = Rack::Prxauth::VERSION
+  spec.name          = "rack-prx_auth"
+  spec.version       = Rack::PrxAuth::VERSION
   spec.authors       = ["Eve Asher"]
   spec.email         = ["eve@prx.org"]
   spec.summary       = %q{Rack middleware that verifies and decodes a JWT token and attaches the token's claims to env.}

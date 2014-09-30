@@ -1,11 +1,11 @@
 require 'minitest/autorun'
 require 'minitest/spec'
 require 'minitest/pride'
-require_relative '../lib/rack/prxauth'
+require_relative '../lib/rack/prx_auth'
 
-describe Rack::Prxauth do
+describe Rack::PrxAuth do
   let(:app) { Proc.new {|env| env } }
-  let(:prxauth) { Rack::Prxauth.new(app) }
+  let(:prxauth) { Rack::PrxAuth.new(app) }
   let(:fake_token) { 'afawefawefawefawegstgnsrtiohnlijbl.ublwjnvrtoign'}
   let(:env) { {'HTTP_AUTHORIZATION' => 'Bearer ' + fake_token } }
   let(:claims) { {'sub'=>nil, 'exp'=>3600, 'iat'=>Time.now.to_i, 'token_type'=>'bearer', 'scope'=>nil, 'iss'=>'auth.prx.org'} }

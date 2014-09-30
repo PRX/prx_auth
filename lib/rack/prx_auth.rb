@@ -1,9 +1,9 @@
 require 'rack/request'
 require 'json/jwt'
-require 'rack/prxauth/version'
+require 'rack/prx_auth/version'
 
 module Rack
-  class Prxauth
+  class PrxAuth
     attr_reader :public_key
 
     def initialize(app)
