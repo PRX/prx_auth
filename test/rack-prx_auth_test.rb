@@ -55,7 +55,8 @@ describe Rack::PrxAuth do
 
     it 'attaches claims to request params if verification passes' do
       JSON::JWT.stub(:decode, claims) do
-        prxauth.call(env)['prx.auth'].must_equal claims
+        prxauth.call(env)['prx.auth'].must_be_instance_of Rack::PrxAuth::TokenData
+        prxauth.call(env)['prx.auth'].attributes.must_equal claims
       end
     end
   end

@@ -1,6 +1,7 @@
 require 'json/jwt'
 require 'rack/prx_auth/version'
-require 'rack/prx_auth/public_key'
+require_relative './public_key'
+require_relative './token_data'
 
 module Rack
   class PrxAuth
@@ -17,7 +18,7 @@ module Rack
 
       if claims['iss'] == 'auth.prx.org'
         if verified?(token) && !token_expired?(claims) && !cert_expired?(@public_key.certificate)
-          env['prx.auth'] = claims
+          env['prx.auth'] = TokenData.new(claims)
           @app.call(env)
         else
           [401, {'Content-Type' => 'application/json'}, [{status: 401, error: 'Invalid JSON Web Token'}.to_json]]
