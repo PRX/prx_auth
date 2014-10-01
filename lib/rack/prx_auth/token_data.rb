@@ -3,10 +3,9 @@ module Rack
     class TokenData
       def initialize(attrs = {})
         @attributes = attrs
-        @user_id = attrs['sub']
       end
 
-      attr_reader :attributes, :user_id
+      attr_reader :attributes
     end
   end
 end

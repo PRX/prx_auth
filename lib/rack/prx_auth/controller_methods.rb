@@ -1,15 +1,11 @@
 class Rack::PrxAuth
   module ControllerMethods
-    def current_user
-      if request.env['prx.auth']
-        User.find_by(id: request.env['prx.auth'].user_id)
-      else
-        nil
-      end
+    def prx_auth_token
+      request.env['prx.auth']
     end
 
-    def user_logged_in?
-      !!current_user
+    def prx_authenticated?
+      !!prx_auth_token
     end
   end
 end
