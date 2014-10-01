@@ -4,9 +4,12 @@ require 'rack/prx_auth'
 
 class Rack::PrxAuth
   class Railtie < Rails::Railtie
-    config.to_prepare do |app|
+    config.to_prepare do
       ApplicationController.send(:include, Rack::PrxAuth::ControllerMethods)
-      app.middleware.insert_before ActionDispatch::ParamsParser, 'Rack::PrxAuth'
+    end
+
+    initializer 'rack-prx_auth.insert_middleware' do |app|
+      app.config.middleware.insert_before ActionDispatch::ParamsParser, 'Rack::PrxAuth'
     end
   end
 end
