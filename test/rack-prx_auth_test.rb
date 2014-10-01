@@ -1,7 +1,7 @@
 require 'minitest/autorun'
 require 'minitest/spec'
 require 'minitest/pride'
-require_relative '../lib/rack/prx_auth'
+require 'rack/prx_auth'
 
 describe Rack::PrxAuth do
   let(:app) { Proc.new {|env| env } }
@@ -55,7 +55,8 @@ describe Rack::PrxAuth do
 
     it 'attaches claims to request params if verification passes' do
       JSON::JWT.stub(:decode, claims) do
-        prxauth.call(env)['prx.auth'].must_equal claims
+        prxauth.call(env)['prx.auth'].must_be_instance_of Rack::PrxAuth::TokenData
+        prxauth.call(env)['prx.auth'].attributes.must_equal claims
       end
     end
   end
@@ -84,6 +85,22 @@ describe Rack::PrxAuth do
     it 'returns false if it is valid' do
       cert.stub(:not_after, Time.now + 100000) do
         prxauth.cert_expired?(cert).must_equal false
+      end
+    end
+  end
+
+  describe '#verified?' do
+    it 'returns false if error is raised' do
+      raise_error = Proc.new { raise JSON::JWT::VerificationFailed }
+
+      JSON::JWT.stub(:decode, raise_error) do
+        prxauth.verified?(fake_token).must_equal false
+      end
+    end
+
+    it 'returns true if no error is raised' do
+      JSON::JWT.stub(:decode, claims) do
+        prxauth.verified?(fake_token).must_equal true
       end
     end
   end
