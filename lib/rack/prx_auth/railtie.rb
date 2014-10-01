@@ -1,4 +1,6 @@
 require 'rails/railtie'
+require 'rack/prx_auth/controller_methods'
+require 'rack/prx_auth'
 
 class Rack::PrxAuth
   class Railtie < Rails::Railtie
