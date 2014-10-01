@@ -88,4 +88,20 @@ describe Rack::PrxAuth do
       end
     end
   end
+
+  describe '#verified?' do
+    it 'returns false if error is raised' do
+      raise_error = Proc.new { raise JSON::JWT::VerificationFailed }
+
+      JSON::JWT.stub(:decode, raise_error) do
+        prxauth.verified?(fake_token).must_equal false
+      end
+    end
+
+    it 'returns true if no error is raised' do
+      JSON::JWT.stub(:decode, claims) do
+        prxauth.verified?(fake_token).must_equal true
+      end
+    end
+  end
 end
