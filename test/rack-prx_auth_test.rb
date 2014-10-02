@@ -8,7 +8,7 @@ describe Rack::PrxAuth do
   let(:prxauth) { Rack::PrxAuth.new(app) }
   let(:fake_token) { 'afawefawefawefawegstgnsrtiohnlijblublwjnvrtoign'}
   let(:env) { {'HTTP_AUTHORIZATION' => 'Bearer ' + fake_token } }
-  let(:claims) { {'sub'=>nil, 'exp'=>3600, 'iat'=>Time.now.to_i, 'token_type'=>'bearer', 'scope'=>nil, 'iss'=>'auth.prx.org'} }
+  let(:claims) { {'sub'=>3, 'exp'=>3600, 'iat'=>Time.now.to_i, 'token_type'=>'bearer', 'scope'=>nil, 'iss'=>'auth.prx.org'} }
 
   describe '#call' do
     it 'does nothing if there is no authorization header' do
@@ -57,6 +57,7 @@ describe Rack::PrxAuth do
       JSON::JWT.stub(:decode, claims) do
         prxauth.call(env)['prx.auth'].must_be_instance_of Rack::PrxAuth::TokenData
         prxauth.call(env)['prx.auth'].attributes.must_equal claims
+        prxauth.call(env)['prx.auth'].user_id.must_equal claims['sub']
       end
     end
   end
