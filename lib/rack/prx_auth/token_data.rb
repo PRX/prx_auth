@@ -6,6 +6,10 @@ module Rack
       end
 
       attr_reader :attributes
+
+      def user_id
+        @attributes['sub']
+      end
     end
   end
 end
