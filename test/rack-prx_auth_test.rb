@@ -1,6 +1,7 @@
 require 'minitest/autorun'
 require 'minitest/spec'
 require 'minitest/pride'
+require 'minitest/stub_any_instance'
 require 'rack/prx_auth'
 
 describe Rack::PrxAuth do
@@ -108,14 +109,21 @@ describe Rack::PrxAuth do
 
   describe 'initialize' do
     it 'takes a certificate location as an option' do
-      prxauth = Rack::PrxAuth.new(app, cert_location: 'http://prx-auth.dev/api/v1/certs')
-      prxauth.public_key.cert_location.host.must_equal 'prx-auth.dev'
-      prxauth.public_key.cert_location.path.must_equal '/api/v1/certs'
+      Rack::PrxAuth::PublicKey.stub_any_instance(:get_key, nil) do
+        prxauth = Rack::PrxAuth.new(app, cert_location: 'http://www.prx-auth.org/api/v1/certs')
+        key = prxauth.public_key
+        key.cert_location.host.must_equal 'www.prx-auth.org'
+        key.cert_location.path.must_equal '/api/v1/certs'
+      end
     end
 
     it 'uses auth.prx.org if no uri is given' do
-      prxauth.public_key.cert_location.host.must_equal 'auth.prx.org'
-      prxauth.public_key.cert_location.path.must_equal '/api/v1/certs'
+      Rack::PrxAuth::PublicKey.stub_any_instance(:get_key, nil) do
+        prxauth = Rack::PrxAuth.new(app)
+        key = prxauth.public_key
+        key.cert_location.host.must_equal 'auth.prx.org'
+        key.cert_location.path.must_equal '/api/v1/certs'
+      end
     end
   end
 end
