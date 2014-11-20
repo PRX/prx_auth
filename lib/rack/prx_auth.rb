@@ -8,9 +8,9 @@ module Rack
   class PrxAuth
     attr_reader :public_key
 
-    def initialize(app)
+    def initialize(app, options = {})
       @app = app
-      @public_key = PublicKey.new
+      @public_key = PublicKey.new(options[:cert_location])
     end
 
     def call(env)

@@ -105,4 +105,17 @@ describe Rack::PrxAuth do
       end
     end
   end
+
+  describe 'initialize' do
+    it 'takes a certificate location as an option' do
+      prxauth = Rack::PrxAuth.new(app, cert_location: 'http://prx-auth.dev/api/v1/certs')
+      prxauth.public_key.cert_location.host.must_equal 'prx-auth.dev'
+      prxauth.public_key.cert_location.path.must_equal '/api/v1/certs'
+    end
+
+    it 'uses auth.prx.org if no uri is given' do
+      prxauth.public_key.cert_location.host.must_equal 'auth.prx.org'
+      prxauth.public_key.cert_location.path.must_equal '/api/v1/certs'
+    end
+  end
 end

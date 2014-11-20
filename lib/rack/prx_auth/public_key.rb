@@ -2,12 +2,12 @@ module Rack
   class PrxAuth
     class PublicKey
       EXPIRES_IN = 43200
-      AUTH_URI = URI('https://auth.prx.org/api/v1/certs')
 
-      attr_reader :certificate
+      attr_reader :certificate, :cert_location
 
-      def initialize
+      def initialize(cert_location = nil)
         @created_at = Time.now
+        @cert_location = URI(cert_location || 'https://auth.prx.org/api/v1/certs')
         get_key
       end
 
@@ -23,7 +23,7 @@ module Rack
       end
 
       def get_certificate
-        certs = JSON.parse(Net::HTTP.get(AUTH_URI))
+        certs = JSON.parse(Net::HTTP.get(@cert_location))
         cert_string = certs['certificates'].values[0]
         OpenSSL::X509::Certificate.new(cert_string)
       end
