@@ -5,7 +5,7 @@ module Rack
   class PrxAuth
     class Certificate
       EXPIRES_IN = 43200
-      DEFAULT_CERT_LOC = URI('https://auth.prx.org/api/v1/certs')
+      DEFAULT_CERT_LOC = URI('https://id.prx.org/api/v1/certs')
 
       attr_reader :cert_location
 

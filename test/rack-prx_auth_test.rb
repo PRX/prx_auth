@@ -16,7 +16,7 @@ describe Rack::PrxAuth do
     it 'does nothing if there is no authorization header' do
       env = {}
 
-      prxauth.call(env).must_equal env
+      prxauth.call(env.clone).must_equal env
     end
 
     it 'does nothing if the token is from another issuer' do
