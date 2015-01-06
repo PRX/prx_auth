@@ -13,7 +13,7 @@ module Rack
 
     DEFAULT_ISS = 'id.prx.org'
 
-    attr_reader :public_key, :issuer
+    attr_reader :issuer
 
     def initialize(app, options = {})
       @app = app
