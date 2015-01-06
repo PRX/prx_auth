@@ -9,7 +9,7 @@ describe Rack::PrxAuth do
   let(:prxauth) { Rack::PrxAuth.new(app) }
   let(:fake_token) { 'afawefawefawefawegstgnsrtiohnlijblublwjnvrtoign'}
   let(:env) { {'HTTP_AUTHORIZATION' => 'Bearer ' + fake_token } }
-  let(:claims) { {'sub'=>3, 'exp'=>3600, 'iat'=>Time.now.to_i, 'token_type'=>'bearer', 'scope'=>nil, 'iss'=>'auth.prx.org'} }
+  let(:claims) { {'sub'=>3, 'exp'=>3600, 'iat'=>Time.now.to_i, 'token_type'=>'bearer', 'scope'=>nil, 'iss'=>'id.prx.org'} }
 
   describe '#call' do
     it 'does nothing if there is no authorization header' do
@@ -117,11 +117,11 @@ describe Rack::PrxAuth do
       end
     end
 
-    it 'uses auth.prx.org if no uri is given' do
+    it 'uses id.prx.org if no uri is given' do
       Rack::PrxAuth::PublicKey.stub_any_instance(:get_key, nil) do
         prxauth = Rack::PrxAuth.new(app)
         key = prxauth.public_key
-        key.cert_location.host.must_equal 'auth.prx.org'
+        key.cert_location.host.must_equal 'id.prx.org'
         key.cert_location.path.must_equal '/api/v1/certs'
       end
     end

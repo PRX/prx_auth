@@ -7,7 +7,7 @@ module Rack
 
       def initialize(cert_location = nil)
         @created_at = Time.now
-        @cert_location = URI(cert_location || 'https://auth.prx.org/api/v1/certs')
+        @cert_location = URI(cert_location || 'https://id.prx.org/api/v1/certs')
         get_key
       end
 

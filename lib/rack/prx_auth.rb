@@ -17,7 +17,7 @@ module Rack
       token = (env['HTTP_AUTHORIZATION'] || 'no token').split[1]
       claims = decode_token(token)
 
-      if claims['iss'] == 'auth.prx.org'
+      if claims['iss'] == 'id.prx.org'
         if verified?(token) && !token_expired?(claims) && !cert_expired?(@public_key.certificate)
           env['prx.auth'] = TokenData.new(claims)
           @app.call(env)
