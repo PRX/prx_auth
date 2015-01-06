@@ -1,32 +1,46 @@
 require 'json/jwt'
 require 'rack/prx_auth/version'
-require 'rack/prx_auth/public_key'
+require 'rack/prx_auth/certificate'
 require 'rack/prx_auth/token_data'
 require 'rack/prx_auth/railtie' if defined?(Rails)
 
 module Rack
   class PrxAuth
-    attr_reader :public_key
+    INVALID_TOKEN = [
+      401, {'Content-Type' => 'application/json'},
+      [{status: 401, error: 'Invalid JSON Web Token'}.to_json]
+    ]
+
+    DEFAULT_ISS = 'id.prx.org'
+
+    attr_reader :public_key, :issuer
 
     def initialize(app, options = {})
       @app = app
-      @public_key = PublicKey.new(options[:cert_location])
+      @certificate = Certificate.new(options[:cert_location])
+      @issuer = options[:issuer] || DEFAULT_ISS
     end
 
     def call(env)
-      token = (env['HTTP_AUTHORIZATION'] || 'no token').split[1]
+      return @app.call(env) unless env['HTTP_AUTHORIZATION']
+
+      token = env['HTTP_AUTHORIZATION'].split[1]
       claims = decode_token(token)
 
-      if claims['iss'] == 'id.prx.org'
-        if verified?(token) && !token_expired?(claims) && !cert_expired?(@public_key.certificate)
-          env['prx.auth'] = TokenData.new(claims)
-          @app.call(env)
-        else
-          [401, {'Content-Type' => 'application/json'}, [{status: 401, error: 'Invalid JSON Web Token'}.to_json]]
-        end
-      else
+      return @app.call(env) unless should_validate_token?(claims)
+
+      if valid?(token, claims)
+        env['prx.auth'] = TokenData.new(claims)
         @app.call(env)
+      else
+        INVALID_TOKEN
       end
+    end
+
+    private
+
+    def valid?(token, claims)
+      @certificate.valid?(token) && !expired?(claims)
     end
 
     def decode_token(token)
@@ -37,22 +51,12 @@ module Rack
       end
     end
 
-    def verified?(token)
-      begin
-        JSON::JWT.decode(token, @public_key.key)
-      rescue JSON::JWT::VerificationFailed
-        false
-      else
-        true
-      end
-    end
-
-    def cert_expired?(certificate)
-      certificate.not_after < Time.now
-    end
-
-    def token_expired?(claims)
+    def expired?(claims)
       Time.now.to_i > (claims['iat'] + claims['exp'])
+    end
+
+    def should_validate_token?(claims)
+      claims['iss'] == @issuer
     end
   end
 end
