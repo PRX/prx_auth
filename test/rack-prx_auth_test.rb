@@ -3,6 +3,7 @@ require 'minitest/spec'
 require 'minitest/pride'
 require 'minitest/stub_any_instance'
 require 'rack/prx_auth'
+require 'lumberjack' rescue nil
 
 describe Rack::PrxAuth do
   let(:app) { Proc.new {|env| env } }
