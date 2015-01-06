@@ -29,7 +29,7 @@ module Rack
 
       return @app.call(env) unless should_validate_token?(claims)
 
-      if valid?(token, claims)
+      if valid?(claims, token)
         env['prx.auth'] = TokenData.new(claims)
         @app.call(env)
       else
@@ -39,8 +39,8 @@ module Rack
 
     private
 
-    def valid?(token, claims)
-      @certificate.valid?(token) && !expired?(claims)
+    def valid?(claims, token)
+      !expired?(claims) && @certificate.valid?(token)
     end
 
     def decode_token(token)
