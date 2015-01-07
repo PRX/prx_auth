@@ -17,7 +17,7 @@ class FakeController
 end
 
 describe Rack::PrxAuth::ControllerMethods do
-  let(:claims) { {'sub'=>nil, 'exp'=>3600, 'iat'=>Time.now.to_i, 'token_type'=>'bearer', 'scope'=>nil, 'iss'=>'auth.prx.org'} }
+  let(:claims) { {'sub'=>nil, 'exp'=>3600, 'iat'=>Time.now.to_i, 'token_type'=>'bearer', 'scope'=>nil, 'iss'=>'id.prx.org'} }
   let(:token_data) { Rack::PrxAuth::TokenData.new(claims) }
   let(:env) { {'prx.auth' => token_data } }
   let(:empty_env) { Hash.new }
