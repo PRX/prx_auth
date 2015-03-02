@@ -29,7 +29,7 @@ The `cert_location` and `issuer` parameters are optional. See below.
 
 ### The Request
 
-Rack-prx_auth looks for a token in the request's HTTP_AUTHORIZATION header. It expects that the header's content will take the form of 'Basic <your token>'. If no HTTP_AUTHORIZATION header is present, rack-prx_auth passes the request to the next middleware.
+Rack-prx_auth looks for a token in the request's HTTP_AUTHORIZATION header. It expects that the header's content will take the form of 'Bearer <your token>'. If no HTTP_AUTHORIZATION header is present, rack-prx_auth passes the request to the next middleware.
 
 We have another application that's in charge of making the token. It's called id.prx.org. Its job is to show a form for a user to enter credentials, validate those credentials, and then generate a JWT using PRX's private key. See http://openid.net/specs/openid-connect-implicit-1_0.html to find out what information is encoded in a JWT. Basically it's a hash containing, among other things, the user's ID, the issuer of the token, and when the token expires.
 
