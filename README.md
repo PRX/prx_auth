@@ -1,5 +1,11 @@
 # Rack::PrxAuth
 
+[![Gem Version](https://badge.fury.io/rb/rack-prx_auth.svg)](http://badge.fury.io/rb/rack-prx_auth)
+[![Dependency Status](https://gemnasium.com/PRX/rack-prx_auth.svg)](https://gemnasium.com/PRX/rack-prx_auth)
+[![Build Status](https://travis-ci.org/PRX/rack-prx_auth.svg?branch=master)](https://travis-ci.org/PRX/rack-prx_auth)
+[![Code Climate](https://codeclimate.com/github/PRX/rack-prx_auth/badges/gpa.svg)](https://codeclimate.com/github/PRX/rack-prx_auth)
+[![Coverage Status](https://coveralls.io/repos/PRX/rack-prx_auth/badge.svg)](https://coveralls.io/r/PRX/rack-prx_auth)
+
 This gem adds middleware to a Rack application that decodes and verified a JSON Web Token (JWT) issued by PRX.org. If the JWT is invalid, the middleware will respond with a 401 Unauthorized. If the JWT was not issued by PRX (or the specified issuer), the request will continue through the middleware stack.
 
 ## Installation
