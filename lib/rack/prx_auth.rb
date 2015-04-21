@@ -2,6 +2,7 @@ require 'json/jwt'
 require 'rack/prx_auth/version'
 require 'rack/prx_auth/certificate'
 require 'rack/prx_auth/token_data'
+require 'rack/prx_auth/controller_methods'
 require 'rack/prx_auth/railtie' if defined?(Rails)
 
 module Rack

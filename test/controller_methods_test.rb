@@ -1,9 +1,4 @@
-require 'minitest/autorun'
-require 'minitest/spec'
-require 'minitest/pride'
-require 'rack/prx_auth'
-require 'rack/prx_auth/controller_methods'
-require 'rack/prx_auth/token_data'
+require_relative 'minitest_helper'
 
 class FakeController
   include Rack::PrxAuth::ControllerMethods

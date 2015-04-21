@@ -1,9 +1,4 @@
-require 'minitest/autorun'
-require 'minitest/spec'
-require 'minitest/pride'
-require 'minitest/stub_any_instance'
-require 'rack/prx_auth'
-require 'lumberjack' rescue nil
+require_relative 'minitest_helper'
 
 describe Rack::PrxAuth do
   let(:app) { Proc.new {|env| env } }
