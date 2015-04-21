@@ -48,7 +48,7 @@ module Rack
       end
 
       def expired?
-        certificate.not_after < Time.now
+        @certificate.not_after < Time.now
       end
     end
   end
