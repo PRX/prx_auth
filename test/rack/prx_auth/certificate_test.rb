@@ -56,4 +56,75 @@ describe Rack::PrxAuth::Certificate do
       certificate.send(:certificate).must_equal :sigil
     end
   end
+
+  describe '#public_key' do
+    it 'pulls from the certificate' do
+      certificate.stub(:certificate, Struct.new(:public_key).new(:key)) do
+        certificate.send(:public_key).must_equal :key
+      end
+    end
+  end
+
+  describe '#fetch' do
+    it 'pulls from `#cert_location`' do
+      Net::HTTP.stub(:get, ->(x) { "{\"certificates\":{\"asdf\":\"#{x}\"}}" }) do
+        OpenSSL::X509::Certificate.stub(:new, ->(x) { x }) do
+          certificate.stub(:cert_location, "a://fake.url/here") do
+            certificate.send(:fetch).must_equal "a://fake.url/here"
+          end
+        end
+      end
+    end
+
+    it 'sets the expiration value' do
+      Net::HTTP.stub(:get, ->(x) { "{\"certificates\":{\"asdf\":\"#{x}\"}}" }) do
+        OpenSSL::X509::Certificate.stub(:new, ->(_) { Struct.new(:not_after).new(Time.now + 10000) }) do
+          certificate.send :certificate
+          certificate.wont_be :needs_refresh?
+        end
+      end
+    end
+  end
+
+  describe '#expired?' do
+    let(:stub_cert) { Struct.new(:not_after).new(Time.now + 10000) }
+    before(:each) do
+      certificate.instance_variable_set :'@certificate', stub_cert
+    end
+
+    it 'is false when the certificate is not expired' do
+      certificate.wont_be :expired?
+    end
+
+    it 'is true when the certificate is expired' do
+      stub_cert.not_after = Time.now - 500
+      certificate.must_be :expired?
+    end
+  end
+
+  describe '#needs_refresh?' do
+    def refresh_at=(time)
+      certificate.instance_variable_set :'@refresh_at', time
+    end
+
+    it 'is true if certificate is expired' do
+      certificate.stub(:expired?, true) do
+        certificate.must_be :needs_refresh?
+      end
+    end
+
+    it 'is true if we are past refresh value' do
+      self.refresh_at = Time.now.to_i - 1000
+      certificate.stub(:expired?, false) do
+        certificate.must_be :needs_refresh?
+      end
+    end
+
+    it 'is false if certificate is not expired and refresh is in the future' do
+      self.refresh_at = Time.now.to_i + 10000
+      certificate.stub(:expired?, false) do
+        certificate.wont_be :needs_refresh?
+      end
+    end
+  end
 end
