@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 
-## [0.0.7] - 2014-07-10
+## [0.0.7] - 2015-06-15
 ### Added
 - This Changelog
 - TokenData#authorized? method
