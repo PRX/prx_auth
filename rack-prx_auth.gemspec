@@ -24,5 +24,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'rack', '~> 1.5', '>= 1.5.2'
   spec.add_dependency 'json', '~> 1.8', '>= 1.8.1'
-  spec.add_dependency 'json-jwt', '~> 0.7', '>= 0.7.0'
+  spec.add_dependency 'json-jwt', '~> 1.0', '>= 1.0.1'
 end
