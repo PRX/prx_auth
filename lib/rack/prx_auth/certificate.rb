@@ -1,11 +1,11 @@
-require 'json/jwt'
-require 'net/http'
+require "json/jwt"
+require "net/http"
 
 module Rack
   class PrxAuth
     class Certificate
       EXPIRES_IN = 43200
-      DEFAULT_CERT_LOC = URI('https://id.prx.org/api/v1/certs')
+      DEFAULT_CERT_LOC = URI("https://id.prx.org/api/v1/certs")
 
       attr_reader :cert_location
 
@@ -14,13 +14,11 @@ module Rack
       end
 
       def valid?(token)
-        begin
-          JSON::JWT.decode(token, public_key)
-        rescue JSON::JWT::VerificationFailed
-          false
-        else
-          true
-        end
+        JSON::JWT.decode(token, public_key)
+      rescue JSON::JWT::VerificationFailed
+        false
+      else
+        true
       end
 
       private
@@ -38,7 +36,7 @@ module Rack
 
       def fetch
         certs = JSON.parse(Net::HTTP.get(cert_location))
-        cert_string = certs['certificates'].values[0]
+        cert_string = certs["certificates"].values[0]
         @refresh_at = Time.now.to_i + EXPIRES_IN
         OpenSSL::X509::Certificate.new(cert_string)
       end

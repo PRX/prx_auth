@@ -1,7 +1,7 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
-# Specify your gem's dependencies in rack-prx_auth.gemspec
+# Specify your gem"s dependencies in rack-prx_auth.gemspec
 gemspec
 
-gem 'guard'
-gem 'guard-minitest'
+gem "guard"
+gem "guard-minitest"

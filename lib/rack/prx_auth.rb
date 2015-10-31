@@ -1,16 +1,16 @@
-require 'json/jwt'
-require 'rack/prx_auth/version'
-require 'rack/prx_auth/certificate'
-require 'rack/prx_auth/token_data'
+require "json/jwt"
+require "rack/prx_auth/version"
+require "rack/prx_auth/certificate"
+require "rack/prx_auth/token_data"
 
 module Rack
   class PrxAuth
     INVALID_TOKEN = [
-      401, {'Content-Type' => 'application/json'},
-      [{status: 401, error: 'Invalid JSON Web Token'}.to_json]
+      401, { "Content-Type" => "application/json" },
+      [{ status: 401, error: "Invalid JSON Web Token" }.to_json]
     ]
 
-    DEFAULT_ISS = 'id.prx.org'
+    DEFAULT_ISS = "id.prx.org"
 
     attr_reader :issuer
 
@@ -21,15 +21,15 @@ module Rack
     end
 
     def call(env)
-      return @app.call(env) unless env['HTTP_AUTHORIZATION']
+      return @app.call(env) unless env["HTTP_AUTHORIZATION"]
 
-      token = env['HTTP_AUTHORIZATION'].split[1]
+      token = env["HTTP_AUTHORIZATION"].split[1]
       claims = decode_token(token)
 
       return @app.call(env) unless should_validate_token?(claims)
 
       if valid?(claims, token)
-        env['prx.auth'] = TokenData.new(claims)
+        env["prx.auth"] = TokenData.new(claims)
         @app.call(env)
       else
         INVALID_TOKEN
@@ -43,19 +43,17 @@ module Rack
     end
 
     def decode_token(token)
-      begin
-        JSON::JWT.decode(token, :skip_verification)
-      rescue JSON::JWT::InvalidFormat
-        {}
-      end
+      JSON::JWT.decode(token, :skip_verification)
+    rescue JSON::JWT::InvalidFormat
+      {}
     end
 
     def expired?(claims)
-      Time.now.to_i > (claims['iat'] + claims['exp'])
+      Time.now.to_i > (claims["iat"] + claims["exp"])
     end
 
     def should_validate_token?(claims)
-      claims['iss'] == @issuer
+      claims["iss"] == @issuer
     end
   end
 end
