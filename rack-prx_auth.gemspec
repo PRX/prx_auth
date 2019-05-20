@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'coveralls', '~> 0'
 
-  spec.add_dependency 'rack', '~> 1.5', '>= 1.5.2'
-  spec.add_dependency 'json', '~> 1.8', '>= 1.8.1'
+  spec.add_dependency 'rack', '>= 1.5.2'
+  spec.add_dependency 'json', '>= 1.8.1'
   spec.add_dependency 'json-jwt', '~> 1.9.4'
 end
