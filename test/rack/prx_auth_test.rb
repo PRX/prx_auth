@@ -86,5 +86,13 @@ describe Rack::PrxAuth do
     it 'should return an empty result for a nil token' do
       prxauth.send(:decode_token, nil).must_equal({})
     end
+
+    it 'should return an empty result for an empty token' do
+      prxauth.send(:decode_token, {}).must_equal({})
+    end
+
+    it 'should return an empty result for a malformed token' do
+      prxauth.send(:decode_token, 'asdfsadfsad').must_equal({})
+    end
   end
 end
