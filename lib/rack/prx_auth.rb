@@ -43,6 +43,8 @@ module Rack
     end
 
     def decode_token(token)
+      return {} if token.nil?
+
       begin
         JSON::JWT.decode(token, :skip_verification)
       rescue JSON::JWT::InvalidFormat

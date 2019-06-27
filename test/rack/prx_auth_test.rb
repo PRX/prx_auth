@@ -26,6 +26,11 @@ describe Rack::PrxAuth do
       prxauth.call(env.clone).must_equal env
     end
 
+    it 'does nothing if the token is nil' do
+      env = {"HTTP_AUTHORIZATION"=>"Bearer "}
+      prxauth.call(env).must_equal env
+    end
+
     it 'returns 401 if verification fails' do
       JSON::JWT.stub(:decode, claims) do
         prxauth.stub(:valid?, false) do
@@ -74,6 +79,20 @@ describe Rack::PrxAuth do
         Rack::PrxAuth.new(app, cert_location: :location)
         loc.must_equal :location
       end
+    end
+  end
+
+  describe '#decode_token' do
+    it 'should return an empty result for a nil token' do
+      prxauth.send(:decode_token, nil).must_equal({})
+    end
+
+    it 'should return an empty result for an empty token' do
+      prxauth.send(:decode_token, {}).must_equal({})
+    end
+
+    it 'should return an empty result for a malformed token' do
+      prxauth.send(:decode_token, 'asdfsadfsad').must_equal({})
     end
   end
 end
