@@ -34,6 +34,7 @@ module Rack
 
         authorized_for_resource?(WILDCARD_RESOURCE_NAME, scope)
       end
+      
       private
 
       def authorized_for_resource?(resource, scope=nil)
