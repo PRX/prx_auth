@@ -24,9 +24,13 @@ module Rack
       end
 
       def authorized?(resource, scope=nil)
-        return globally_authorized?(scope) if resource == WILDCARD_RESOURCE_NAME
-
-        authorized_for_resource?(resource, scope) || (scope.nil? ? false : globally_authorized?(scope))
+        if resource == WILDCARD_RESOURCE_NAME
+          globally_authorized?(scope)
+        elsif scope.nil?
+          authorized_for_resource?(resource, scope)
+        else
+          authorized_for_resource?(resource, scope) || globally_authorized?(scope)
+        end
       end
 
       def globally_authorized?(scope)
