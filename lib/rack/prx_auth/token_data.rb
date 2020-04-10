@@ -56,9 +56,6 @@ module Rack
               end
             end
           end
-          if result[WILDCARD_RESOURCE_NAME].nil? && result['0']
-            result[WILDCARD_RESOURCE_NAME] = result.delete('0')
-          end
         end
       end
     end

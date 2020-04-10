@@ -82,25 +82,5 @@ describe Rack::PrxAuth::TokenData do
         end
       end
     end
-
-    describe 'wildcard fallback handling' do
-
-      describe 'with no primary wildcard present' do
-        let(:aur) { {'0' => 'peek', '123' => 'admin', '456' => 'member' } }
-
-        it 'applies fallback as a wildcard' do
-          assert token.authorized?(789, :peek)
-        end
-      end
-
-      describe 'with primary wildcard present' do
-        let(:aur) { {'*' => 'cook', '0' => 'peek', '123' => 'admin', '456' => 'member' } }
-
-        it 'does not apply the fallback as a wildcard' do
-          assert token.authorized?(789, :cook)
-          assert !token.authorized?(789, :peek)
-        end
-      end
-    end
   end
 end
