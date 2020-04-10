@@ -1,5 +1,6 @@
 require 'prx_auth/scope_list'
-require 'rack/prx_auth'
+require 'prx_auth/resource_map'
+require 'rack/prx_auth/version'
 
 module PrxAuth
   VERSION = Rack::PrxAuth::VERSION
