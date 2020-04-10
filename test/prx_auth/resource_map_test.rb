@@ -2,7 +2,7 @@ require 'test_helper'
 
 describe PrxAuth::ResourceMap do
   let(:map) { PrxAuth::ResourceMap.new(resources) }
-  let(:resources) { {'123' => 'admin one two three', '456' => 'member four five six' } }
+  let(:resources) { {'123' => 'admin one two three ns1:namespaced', '456' => 'member four five six' } }
 
   describe '#authorized?' do
     it 'contains scopes in list' do
@@ -19,6 +19,10 @@ describe PrxAuth::ResourceMap do
 
     it 'does not match if it hasnt seen the resource' do
       assert !map.contains?(789)
+    end
+
+    it 'works with namespaced scopes' do
+      assert map.contains?(123, :ns1, :namespaced)
     end
 
     describe 'with wildcard resource' do

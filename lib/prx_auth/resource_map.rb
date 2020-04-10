@@ -8,16 +8,17 @@ module PrxAuth
       end]
     end
 
-    def contains?(resource, scope=nil)
+    def contains?(resource, namespace=nil, scope=nil)
       mapped_resource = @map[resource.to_s]
+
       if mapped_resource == wildcard_resource
-        raise ArgumentError if scope.nil?
+        raise ArgumentError if namespace.nil?
       
-        mapped_resource.contains?(scope)
-      elsif mapped_resource && !scope.nil?
-        mapped_resource.contains?(scope) || wildcard_resource.contains?(scope)
-      elsif !scope.nil?
-        wildcard_resource.contains?(scope)
+        mapped_resource.contains?(namespace, scope)
+      elsif mapped_resource && !namespace.nil?
+        mapped_resource.contains?(namespace, scope) || wildcard_resource.contains?(namespace, scope)
+      elsif !namespace.nil?
+        wildcard_resource.contains?(namespace, scope)
       else
         !!mapped_resource
       end
