@@ -21,7 +21,7 @@ describe PrxAuth::ScopeList do
   end
 
   describe 'with namespace' do
-    let (:scopes) { 'ns1:hello ns2:goodbye aloha' }
+    let (:scopes) { 'ns1:hello ns2:goodbye aloha 1:23' }
     
     it 'works for namespaced lookups' do
       assert list.contains?(:ns1, :hello)
@@ -36,6 +36,9 @@ describe PrxAuth::ScopeList do
       assert list.contains?(:ns3, :aloha)
     end
 
+    it 'works with non-symbol namespaces' do
+      assert list.contains?(1, 23)
+    end
   end
 
 end

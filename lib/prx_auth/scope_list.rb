@@ -15,7 +15,7 @@ module PrxAuth
         map[namespace].include?(symbolize(scope))
       else
         symbolized_scope = symbolize(scope)
-        map[namespace].include?(symbolized_scope) || map[NO_NAMESPACE].include?(symbolized_scope)
+        map[symbolize(namespace)].include?(symbolized_scope) || map[NO_NAMESPACE].include?(symbolized_scope)
       end
     end
 
