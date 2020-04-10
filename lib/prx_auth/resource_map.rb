@@ -24,6 +24,12 @@ module PrxAuth
       end
     end
 
+    def freeze
+      @map.freeze
+      wildcard_resource.freeze
+      self
+    end
+
     private
 
     def wildcard_resource

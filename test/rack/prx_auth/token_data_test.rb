@@ -8,7 +8,7 @@ describe Rack::PrxAuth::TokenData do
 
   it 'pulls authorized_resources from aur' do
     token = Rack::PrxAuth::TokenData.new('aur' => {'123' => 'admin'})
-    assert token.authorized_resources['123'] == 'admin'
+    assert token.authorized_resources.contains?('123', 'admin')
   end
 
   it 'unpacks compressed aur into authorized_resources' do
@@ -18,22 +18,18 @@ describe Rack::PrxAuth::TokenData do
         'admin' => [456, 789, 1011]
       }
     })
-    assert token.authorized_resources['$'].nil?
-    assert token.authorized_resources['789'] == 'admin'
-    assert token.authorized_resources['123'] == 'member'
+    assert !token.authorized_resources.contains?('$')
+    assert token.authorized_resources.contains?('789', :admin)
+    assert token.authorized_resources.contains?(123, :member)
   end
 
   describe '#authorized?' do
     let(:token) { Rack::PrxAuth::TokenData.new('aur' => aur, 'scope' => scope) }
     let(:scope) { 'read write purchase sell delete' }
-    let(:aur) { {'123' => 'admin', '456' => 'member' } }
+    let(:aur) { {'123' => 'admin ns1:namespaced', '456' => 'member' } }
 
     it 'is authorized for scope in aur' do
       assert token.authorized?(123, 'admin')
-    end
-
-    it 'is authorized for scope in scopes' do
-      assert token.authorized?(456, :delete)
     end
 
     it 'is not authorized across aur limits' do
@@ -46,6 +42,12 @@ describe Rack::PrxAuth::TokenData do
 
     it 'is unauthorized if it hasnt seen the resource' do
       assert !token.authorized?(789)
+    end
+
+    it 'works for namespaced scopes' do
+      assert token.authorized?(123, :ns1, :namespaced)
+      assert !token.authorized?(123, :namespaced)
+      assert token.authorized?(123, :ns1, :admin)
     end
 
     describe 'with wildcard role' do

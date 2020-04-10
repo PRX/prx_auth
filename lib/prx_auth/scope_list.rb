@@ -19,6 +19,11 @@ module PrxAuth
       end
     end
 
+    def freeze
+      @string.freeze
+      self
+    end
+
     private
 
     def map
