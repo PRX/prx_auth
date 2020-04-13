@@ -3,7 +3,7 @@ require 'prx_auth/resource_map'
 module Rack
   class PrxAuth
     class TokenData
-      attr_reader :attributes, :authorized_resources, :scopes
+      attr_reader :scopes
 
       def initialize(attrs = {})
         @attributes = attrs
@@ -15,6 +15,10 @@ module Rack
         else
           @scopes = [].freeze
         end
+      end
+
+      def resources(namespace=nil, scope=nil)
+        @authorized_resources.resources(namespace, scope)
       end
 
       def user_id

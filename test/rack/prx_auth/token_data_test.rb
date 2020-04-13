@@ -6,21 +6,34 @@ describe Rack::PrxAuth::TokenData do
     assert token.user_id == 123
   end
 
-  it 'pulls authorized_resources from aur' do
+  it 'pulls resources from aur' do
     token = Rack::PrxAuth::TokenData.new('aur' => {'123' => 'admin'})
-    assert token.authorized_resources.contains?('123', 'admin')
+    assert token.resources.include?('123')
   end
 
-  it 'unpacks compressed aur into authorized_resources' do
+  it 'unpacks compressed aur' do
     token = Rack::PrxAuth::TokenData.new('aur' => {
       '123' => 'member',
       '$' => {
         'admin' => [456, 789, 1011]
       }
     })
-    assert !token.authorized_resources.contains?('$')
-    assert token.authorized_resources.contains?('789', :admin)
-    assert token.authorized_resources.contains?(123, :member)
+    assert !token.resources.include?('$')
+    assert token.resources.include?('789')
+    assert token.resources.include?('123')
+  end
+
+  describe '#resources' do
+    let(:token) { Rack::PrxAuth::TokenData.new('aur' => aur) }
+    let(:aur) { {'123' => 'admin ns1:namespaced', '456' => 'member' } }
+
+    it 'scans for resources by namespace and scope' do
+      assert token.resources(:admin) == ['123']
+      assert token.resources(:namespaced) == []
+      assert token.resources(:member) == ['456']
+      assert token.resources(:ns1, :namespaced) == ['123']
+      assert token.resources(:ns1, :member) == ['456']
+    end
   end
 
   describe '#authorized?' do

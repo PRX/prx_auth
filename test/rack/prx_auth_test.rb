@@ -52,7 +52,6 @@ describe Rack::PrxAuth do
         prxauth.stub(:valid?, true) do
           prxauth.call(env)['prx.auth'].tap do |token|
             assert token.instance_of? Rack::PrxAuth::TokenData
-            assert token.attributes == claims
             assert token.user_id == claims['sub']
           end
         end

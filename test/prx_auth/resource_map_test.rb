@@ -1,8 +1,8 @@
 require 'test_helper'
 
 describe PrxAuth::ResourceMap do
-  let(:map) { PrxAuth::ResourceMap.new(resources) }
-  let(:resources) { {'123' => 'admin one two three ns1:namespaced', '456' => 'member four five six' } }
+  let(:map) { PrxAuth::ResourceMap.new(input) }
+  let(:input) { {'123' => 'admin one two three ns1:namespaced', '456' => 'member four five six' } }
 
   describe '#authorized?' do
     it 'contains scopes in list' do
@@ -26,7 +26,7 @@ describe PrxAuth::ResourceMap do
     end
 
     describe 'with wildcard resource' do
-      let(:resources) do
+      let(:input) do
         {
           '*' => 'peek',
           '123' => 'admin one two three',
@@ -56,6 +56,43 @@ describe PrxAuth::ResourceMap do
           map.contains?('*')
         end
       end
+    end
+  end
+
+  describe '#resources' do
+    let (:input) do
+      {
+        '*' => 'read wildcard',
+        '123' => 'read write buy',
+        '456' => 'read ns1:buy'
+      }
+    end
+
+    let (:resources) { map.resources }
+
+    it 'returns resource ids' do
+      assert resources.include?('123')
+      assert resources.include?('456')
+    end
+
+    it 'excludes wildcard values' do
+      assert !resources.include?('*')
+    end
+
+    it 'filters for scope' do
+      resources = map.resources(:write)
+      assert resources.include?('123')
+      assert !resources.include?('456')
+      assert !resources.include?('*')
+    end
+
+    it 'works with namespaces' do
+      resources = map.resources(:ns1, :buy)
+      assert resources.include?('123')
+      assert resources.include?('456')
+
+      resources = map.resources(:buy)
+      assert !resources.include?('456')
     end
   end
 end
