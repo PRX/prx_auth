@@ -11,30 +11,30 @@ describe Rack::PrxAuth do
     it 'does nothing if there is no authorization header' do
       env = {}
 
-      prxauth.call(env.clone).must_equal env
+      assert prxauth.call(env.clone) == env
     end
 
     it 'does nothing if the token is from another issuer' do
       claims['iss'] = 'auth.elsewhere.org'
 
       JSON::JWT.stub(:decode, claims) do
-        prxauth.call(env.clone).must_equal env
+        assert prxauth.call(env.clone) == env
       end
     end
 
     it 'does nothing if token is invalid' do
-      prxauth.call(env.clone).must_equal env
+      assert prxauth.call(env.clone) == env
     end
 
     it 'does nothing if the token is nil' do
-      env = {"HTTP_AUTHORIZATION"=>"Bearer "}
-      prxauth.call(env).must_equal env
+      env = { "HTTP_AUTHORIZATION" => "Bearer "}
+      assert prxauth.call(env) == env
     end
 
     it 'returns 401 if verification fails' do
       JSON::JWT.stub(:decode, claims) do
         prxauth.stub(:valid?, false) do
-          prxauth.call(env).must_equal Rack::PrxAuth::INVALID_TOKEN
+          assert prxauth.call(env) == Rack::PrxAuth::INVALID_TOKEN
         end
       end
     end
@@ -42,7 +42,7 @@ describe Rack::PrxAuth do
     it 'returns 401 if access token has expired' do
       JSON::JWT.stub(:decode, claims) do
         prxauth.stub(:expired?, true) do
-          prxauth.call(env).must_equal Rack::PrxAuth::INVALID_TOKEN
+          assert prxauth.call(env) == Rack::PrxAuth::INVALID_TOKEN
         end
       end
     end
@@ -51,9 +51,8 @@ describe Rack::PrxAuth do
       prxauth.stub(:decode_token, claims) do
         prxauth.stub(:valid?, true) do
           prxauth.call(env)['prx.auth'].tap do |token|
-            token.must_be_instance_of Rack::PrxAuth::TokenData
-            token.attributes.must_equal claims
-            token.user_id.must_equal claims['sub']
+            assert token.instance_of? Rack::PrxAuth::TokenData
+            assert token.user_id == claims['sub']
           end
         end
       end
@@ -64,11 +63,11 @@ describe Rack::PrxAuth do
     it 'returns true if token is expired' do
       claims['iat'] = Time.now.to_i - 4000
 
-      prxauth.send(:expired?, claims).must_equal true
+      assert prxauth.send(:expired?, claims) == true
     end
 
     it 'returns false if it is valid' do
-      prxauth.send(:expired?, claims).must_equal false
+      assert prxauth.send(:expired?, claims) == false
     end
   end
 
@@ -77,22 +76,22 @@ describe Rack::PrxAuth do
       loc = nil
       Rack::PrxAuth::Certificate.stub(:new, Proc.new{|l| loc = l}) do
         Rack::PrxAuth.new(app, cert_location: :location)
-        loc.must_equal :location
+        assert loc == :location
       end
     end
   end
 
   describe '#decode_token' do
     it 'should return an empty result for a nil token' do
-      prxauth.send(:decode_token, nil).must_equal({})
+      assert prxauth.send(:decode_token, nil) == {}
     end
 
     it 'should return an empty result for an empty token' do
-      prxauth.send(:decode_token, {}).must_equal({})
+      assert prxauth.send(:decode_token, {}) == {}
     end
 
     it 'should return an empty result for a malformed token' do
-      prxauth.send(:decode_token, 'asdfsadfsad').must_equal({})
+      assert prxauth.send(:decode_token, 'asdfsadfsad') == {}
     end
   end
 end

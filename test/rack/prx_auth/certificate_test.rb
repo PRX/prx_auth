@@ -7,11 +7,11 @@ describe Rack::PrxAuth::Certificate do
   describe '#initialize' do
     it 'allows setting the location of the certificates' do
       cert = Rack::PrxAuth::Certificate.new('http://example.com')
-      cert.cert_location.must_equal URI('http://example.com')
+      assert cert.cert_location == URI('http://example.com')
     end
 
     it 'defaults to DEFAULT_CERT_LOC' do
-      certificate.cert_location.must_equal Rack::PrxAuth::Certificate::DEFAULT_CERT_LOC
+      assert certificate.cert_location == Rack::PrxAuth::Certificate::DEFAULT_CERT_LOC
     end
   end
 
@@ -24,8 +24,8 @@ describe Rack::PrxAuth::Certificate do
         end
       end
 
-      token.must_equal :token
-      key.must_equal :public_key
+      assert token == :token
+      assert key == :public_key
     end
 
     it 'returns false if verification fails' do
@@ -33,7 +33,7 @@ describe Rack::PrxAuth::Certificate do
         raise JSON::JWT::VerificationFailed
       end) do
         certificate.stub(:public_key, :foo) do
-          certificate.wont_be :valid?, :token
+          assert !certificate.valid?(:token)
         end
       end
     end
@@ -41,7 +41,7 @@ describe Rack::PrxAuth::Certificate do
     it 'returns true if verification passes' do
       JSON::JWT.stub(:decode, {}) do
         certificate.stub(:public_key, :foo) do
-          certificate.must_be :valid?, :token
+          assert certificate.valid?(:token)
         end
       end
     end
@@ -53,14 +53,14 @@ describe Rack::PrxAuth::Certificate do
         :sigil
       end
 
-      certificate.send(:certificate).must_equal :sigil
+      assert certificate.send(:certificate) == :sigil
     end
   end
 
   describe '#public_key' do
     it 'pulls from the certificate' do
       certificate.stub(:certificate, Struct.new(:public_key).new(:key)) do
-        certificate.send(:public_key).must_equal :key
+        assert certificate.send(:public_key) == :key
       end
     end
   end
@@ -70,7 +70,7 @@ describe Rack::PrxAuth::Certificate do
       Net::HTTP.stub(:get, ->(x) { "{\"certificates\":{\"asdf\":\"#{x}\"}}" }) do
         OpenSSL::X509::Certificate.stub(:new, ->(x) { x }) do
           certificate.stub(:cert_location, "a://fake.url/here") do
-            certificate.send(:fetch).must_equal "a://fake.url/here"
+            assert certificate.send(:fetch) == "a://fake.url/here"
           end
         end
       end
@@ -80,7 +80,7 @@ describe Rack::PrxAuth::Certificate do
       Net::HTTP.stub(:get, ->(x) { "{\"certificates\":{\"asdf\":\"#{x}\"}}" }) do
         OpenSSL::X509::Certificate.stub(:new, ->(_) { Struct.new(:not_after).new(Time.now + 10000) }) do
           certificate.send :certificate
-          certificate.wont_be :needs_refresh?
+          assert !certificate.send(:needs_refresh?)
         end
       end
     end
@@ -93,12 +93,12 @@ describe Rack::PrxAuth::Certificate do
     end
 
     it 'is false when the certificate is not expired' do
-      certificate.wont_be :expired?
+      assert !certificate.send(:expired?)
     end
 
     it 'is true when the certificate is expired' do
       stub_cert.not_after = Time.now - 500
-      certificate.must_be :expired?
+      assert certificate.send(:expired?)
     end
   end
 
@@ -109,21 +109,21 @@ describe Rack::PrxAuth::Certificate do
 
     it 'is true if certificate is expired' do
       certificate.stub(:expired?, true) do
-        certificate.must_be :needs_refresh?
+        assert certificate.send(:needs_refresh?)
       end
     end
 
     it 'is true if we are past refresh value' do
       self.refresh_at = Time.now.to_i - 1000
       certificate.stub(:expired?, false) do
-        certificate.must_be :needs_refresh?
+        assert certificate.send(:needs_refresh?)
       end
     end
 
     it 'is false if certificate is not expired and refresh is in the future' do
       self.refresh_at = Time.now.to_i + 10000
       certificate.stub(:expired?, false) do
-        certificate.wont_be :needs_refresh?
+        assert !certificate.send(:needs_refresh?)
       end
     end
   end
