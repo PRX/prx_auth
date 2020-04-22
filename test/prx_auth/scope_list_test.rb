@@ -41,4 +41,11 @@ describe PrxAuth::ScopeList do
     end
   end
 
+  describe '#condense' do
+    let (:scopes) { "ns1:foo foo" }
+    it 'removes redundant scopes based on namespace wildcards' do
+      assert list.condense.to_s == "foo"
+    end
+  end
+
 end

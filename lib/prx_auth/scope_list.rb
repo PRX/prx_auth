@@ -24,6 +24,57 @@ module PrxAuth
       self
     end
 
+    def to_s
+      @string
+    end
+
+    def condense
+      tripped = false
+      result = map[NO_NAMESPACE].clone
+      namespaces = map.keys - [NO_NAMESPACE]
+
+      namespaces.each do |ns|
+        map[ns].each do |scope|
+          if !contains?(NO_NAMESPACE, scope)
+            result << scope_string(ns, scope)
+          else
+            tripped = true
+          end
+        end
+      end
+
+      if tripped
+        ScopeList.new(result.join(SCOPE_SEPARATOR))
+      else
+        self
+      end
+    end
+
+    def as_json(opts=())
+      to_s.as_json(opts)
+    end
+
+    def -(other_scope_list)
+      tripped = false
+      result = []
+
+      map.each do |namespace, scopes|
+        scopes.each do |scope|
+          if other_scope_list.contains?(namespace, scope)
+            tripped = true
+          else
+            result << scope_string(namespace, scope)
+          end
+        end
+      end
+
+      if tripped
+        ScopeList.new(result.join(SCOPE_SEPARATOR))
+      else
+        self
+      end
+    end
+
     private
 
     def map
@@ -38,6 +89,14 @@ module PrxAuth
             map[NO_NAMESPACE] << symbolize(parts[0])
           end
         end
+      end
+    end
+
+    def scope_string(ns, scope)
+      if ns == NO_NAMESPACE
+        scope.to_s
+      else
+        [ns, scope].join(NAMESPACE_SEPARATOR)
       end
     end
 

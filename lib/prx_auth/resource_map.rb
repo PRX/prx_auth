@@ -30,6 +30,18 @@ module PrxAuth
       end
     end
 
+    def condense
+      condensed_wildcard = @wildcard.condense
+      condensed_map = Hash[@map.map do |resource, list|
+        [resource, (list - condensed_wildcard).condense]
+      end]
+      ResourceMap.new(condensed_map.merge(WILDCARD_KEY => condensed_wildcard))
+    end
+
+    def as_json(opts={})
+      @map.merge(WILDCARD_KEY => @wildcard).as_json(opts)
+    end
+
     def freeze
       @map.freeze
       @wildcard.freeze

@@ -95,4 +95,13 @@ describe PrxAuth::ResourceMap do
       assert !resources.include?('456')
     end
   end
+
+  describe '#condense' do
+    let (:input) {{ "one" => "one two three ns1:one", "two" => "two three", "*" => "two" }}
+    let (:json) { map.condense.as_json }
+
+    it "removes redundant values which are in the wildcard" do
+      assert !json["one"].include?("two")
+    end
+  end
 end
