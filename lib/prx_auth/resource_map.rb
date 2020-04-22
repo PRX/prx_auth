@@ -53,7 +53,7 @@ module PrxAuth
         @map.keys
       else
         @map.select do |name, list|
-          list.contains?(namespace, scope)
+          list.contains?(namespace, scope) || @wildcard.contains?(namespace, scope)
         end.map(&:first)
       end
     end

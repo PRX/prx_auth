@@ -97,11 +97,15 @@ describe PrxAuth::ResourceMap do
   end
 
   describe '#condense' do
-    let (:input) {{ "one" => "one two three ns1:one", "two" => "two three", "*" => "two" }}
+    let (:input) {{ "one" => "one two three ns1:one", "two" => "two three",  "three" => "two", "*" => "two" }}
     let (:json) { map.condense.as_json }
 
     it "removes redundant values which are in the wildcard" do
       assert !json["one"].include?("two")
+    end
+
+    it "keeps resources in the hash even if all scopes are redundant" do
+      assert json["three"] == ""
     end
   end
 end
