@@ -1,5 +1,4 @@
 require 'json/jwt'
-require 'rack/prx_auth/version'
 require 'rack/prx_auth/certificate'
 require 'rack/prx_auth/token_data'
 require 'prx_auth'

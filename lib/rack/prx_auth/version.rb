@@ -1,5 +1,7 @@
+require 'prx_auth/version'
+
 module Rack
   class PrxAuth
-    VERSION = "1.1.0"
+    VERSION = PrxAuth::VERSION
   end
 end
