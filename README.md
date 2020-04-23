@@ -62,7 +62,7 @@ If there's nothing in the HTTP_AUTHORIZATION heading, there's something but JSON
 
 If all goes well, Rack::PrxAuth takes the decoded JWT and makes a TokenData object. Then it adds this object to the `env` with the key 'prx.auth'.
 
-If you are using Rack::PrxAuth in a Rails app, probably use [prx_auth-rails](https://github.com/PRX/prx_auth-rails) which will automatically install the middlware and add some helpful controller methods.
+If you are using Rack::PrxAuth in a Rails app, probably use [prx_auth-rails](https://github.com/PRX/prx_auth-rails) which will automatically install the middleware and add some helpful controller methods.
 
 ## Contributing
 
