@@ -123,7 +123,7 @@ describe PrxAuth::ResourceMap do
   end
 
   describe '#-' do
-    it 'sutracts values' do
+    it 'subtracts values' do
       map = new_map("one" => "two three", "two" => "four") - new_map("one" => "three four")
       assert map.contains?('one', :two)
       assert map.contains?('two', :four)
