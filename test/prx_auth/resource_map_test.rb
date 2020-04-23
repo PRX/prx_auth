@@ -116,8 +116,9 @@ describe PrxAuth::ResourceMap do
 
   describe '#+' do
     it 'adds values' do
-      map = new_map("one" => "two") + new_map("one" => "three")
+      map = new_map("one" => "two", "two" => "four") + new_map("one" => "three", "three" => "six")
       assert map.contains?('one', :two) && map.contains?('one', :three)
+      assert map.contains?('two', :four) && map.contains?('three', :six)
     end
   end
 
