@@ -137,10 +137,14 @@ describe PrxAuth::ResourceMap do
 
   describe '#&' do
     it 'computes the intersection' do
-      map = new_map("one" => "two three", "four" => "five six") & new_map("one" => "three four", "four" => "six seven")
+      map = (
+        new_map("one" => "two three", "four" => "five six", "five" => "five") &
+        new_map("one" => "three four", "four" => "six seven", "six" => "six")
+      )
       assert map.contains?("one", :three) && map.contains?("four", :six)
       assert !map.contains?("one", :two) && !map.contains?("four", :five)
       assert !map.contains?("one", :four) && !map.contains?("four", :seven)
+      assert !map.contains?("five", :five) && !map.contains?("six", :six)
     end
 
     it 'works with wildcards' do
