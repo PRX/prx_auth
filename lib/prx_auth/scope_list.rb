@@ -4,6 +4,13 @@ module PrxAuth
     NAMESPACE_SEPARATOR = ':'
     NO_NAMESPACE = :_
 
+    def self.new(list)
+      case list
+      when PrxAuth::ScopeList then list
+      else super(list)
+      end
+    end
+
     def initialize(list)
       @string = list
     end
@@ -55,6 +62,8 @@ module PrxAuth
     end
 
     def -(other_scope_list)
+      return self if other_scope_list.nil?
+
       tripped = false
       result = []
 
@@ -73,6 +82,18 @@ module PrxAuth
       else
         self
       end
+    end
+
+    def +(other_list)
+      return self if other_list.nil?
+
+      ScopeList.new([to_s, other_list.to_s].join(SCOPE_SEPARATOR)).condense
+    end
+
+    def &(other_list)
+      return ScopeList.new('') if other_list.nil?
+      
+      self - (self - other_list)
     end
 
     private

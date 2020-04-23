@@ -1,6 +1,11 @@
 require 'test_helper'
 
 describe PrxAuth::ResourceMap do
+
+  def new_map(val)
+    PrxAuth::ResourceMap.new(val)
+  end
+
   let(:map) { PrxAuth::ResourceMap.new(input) }
   let(:input) { {'123' => 'admin one two three ns1:namespaced', '456' => 'member four five six' } }
 
@@ -106,6 +111,43 @@ describe PrxAuth::ResourceMap do
 
     it "keeps resources in the hash even if all scopes are redundant" do
       assert json["three"] == ""
+    end
+  end
+
+  describe '#+' do
+    it 'adds values' do
+      map = new_map("one" => "two") + new_map("one" => "three")
+      assert map.contains?('one', :two) && map.contains?('one', :three)
+    end
+  end
+
+  describe '#-' do
+    it 'sutracts values' do
+      map = new_map("one" => "two three", "two" => "four") - new_map("one" => "three four")
+      assert map.contains?('one', :two)
+      assert map.contains?('two', :four)
+      assert !map.contains?('one', :three) && !map.contains?('one', :four)
+    end
+
+    it 'works on wildcards on right side of operator' do
+      map = new_map("one" => "two three") - new_map("*" => "two")
+      assert !map.contains?("one", :two)
+    end
+  end
+
+  describe '#&' do
+    it 'computes the intersection' do
+      map = new_map("one" => "two three", "four" => "five six") & new_map("one" => "three four", "four" => "six seven")
+      assert map.contains?("one", :three) && map.contains?("four", :six)
+      assert !map.contains?("one", :two) && !map.contains?("four", :five)
+      assert !map.contains?("one", :four) && !map.contains?("four", :seven)
+    end
+
+    it 'works with wildcards' do
+      map = new_map("*" => "three wild", "one" => "four two" ) & new_map("*" => "two wild", "two" => "three four")
+      assert map.contains?("two", :three) && map.contains?("one", :two)
+      assert !map.contains?("one", :four) && !map.contains?("two", :four)
+      assert map.contains?("*", :wild)
     end
   end
 end
