@@ -70,7 +70,7 @@ module PrxAuth
         result[resource] = list_for_resource(resource) - (other_wildcard + other_map.list_for_resource(resource))
       end
 
-      if @wildcard
+      if @wildcard.length
         result[WILDCARD_KEY] = @wildcard - other_wildcard
       end
 
@@ -94,7 +94,7 @@ module PrxAuth
                       end
       end
 
-      if @wildcard
+      if @wildcard.length > 0
         result[WILDCARD_KEY] = @wildcard - (@wildcard - other_wildcard)
       end
 
@@ -102,7 +102,7 @@ module PrxAuth
     end
 
     def as_json(opts={})
-      super(opts).merge({WILDCARD_KEY => @wildcard}.as_json(opts))
+      super(opts).merge(@wildcard.length > 0 ? {WILDCARD_KEY => @wildcard}.as_json(opts) : {})
     end
 
     def resources(namespace=nil, scope=nil)
