@@ -1,34 +1,72 @@
 module PrxAuth
-  class ScopeList
+  class ScopeList < Array
     SCOPE_SEPARATOR = ' '
     NAMESPACE_SEPARATOR = ':'
     NO_NAMESPACE = :_
 
+    Entry = Struct.new(:namespace, :scope)
+
+    class Entry
+      def equal?(other_entry)
+        namespace == other_entry.namespace && scope == other_entry.scope
+      end
+
+      def to_s
+        if namespaced?
+          "#{namespace}:#{scope}"
+        else
+          scope.to_s
+        end
+      end
+
+      def namespaced?
+        !(namespace.nil? || namespace == NO_NAMESPACE)
+      end
+
+      def unnamespaced
+        if namespaced?
+          Entry.new(NO_NAMESPACE, scope)
+        else
+          self
+        end
+      end
+    end
+
     def self.new(list)
       case list
       when PrxAuth::ScopeList then list
+      when Array then super(list.join(' '))
       else super(list)
       end
     end
 
     def initialize(list)
       @string = list
-    end
+      @string.split(SCOPE_SEPARATOR).each do |value|
+        next if value.length < 1
 
-    def contains?(namespace, scope=nil)
-      scope, namespace = namespace, NO_NAMESPACE if scope.nil?
-
-      if namespace == NO_NAMESPACE
-        map[namespace].include?(symbolize(scope))
-      else
-        symbolized_scope = symbolize(scope)
-        map[symbolize(namespace)].include?(symbolized_scope) || map[NO_NAMESPACE].include?(symbolized_scope)
+        parts = value.split(NAMESPACE_SEPARATOR, 2)
+        if parts.length == 2
+          push Entry.new(symbolize(parts[0]), symbolize(parts[1]))
+        else
+          push Entry.new(NO_NAMESPACE, symbolize(parts[0]))
+        end
       end
     end
 
-    def freeze
-      @string.freeze
-      self
+    def contains?(namespace, scope=nil)
+      entries = if scope.nil?
+                  scope, namespace = namespace, NO_NAMESPACE 
+                  [Entry.new(namespace, symbolize(scope))]
+                else
+                  scope = symbolize(scope)
+                  namespace = symbolize(namespace)
+                  [Entry.new(namespace, scope), Entry.new(NO_NAMESPACE, scope)]
+                end
+      
+      entries.any? do |possible_match|
+        include?(possible_match)
+      end
     end
 
     def to_s
@@ -37,16 +75,13 @@ module PrxAuth
 
     def condense
       tripped = false
-      result = map[NO_NAMESPACE].clone
-      namespaces = map.keys - [NO_NAMESPACE]
+      result = []
 
-      namespaces.each do |ns|
-        map[ns].each do |scope|
-          if !contains?(NO_NAMESPACE, scope)
-            result << scope_string(ns, scope)
-          else
-            tripped = true
-          end
+      each do |entry|
+        if entry.namespaced? && include?(entry.unnamespaced)
+          tripped = true
+        else
+          result << entry
         end
       end
 
@@ -67,13 +102,11 @@ module PrxAuth
       tripped = false
       result = []
 
-      map.each do |namespace, scopes|
-        scopes.each do |scope|
-          if other_scope_list.contains?(namespace, scope)
-            tripped = true
-          else
-            result << scope_string(namespace, scope)
-          end
+      each do |entry|
+        if other_scope_list.include?(entry) || other_scope_list.include?(entry.unnamespaced)
+          tripped = true
+        else
+          result << entry
         end
       end
 
@@ -97,35 +130,6 @@ module PrxAuth
     end
 
     private
-
-    def map
-      @parsed_map ||= empty_map.tap do |map|
-        @string.split(SCOPE_SEPARATOR).each do |value|
-          next if value.length < 1
-
-          parts = value.split(NAMESPACE_SEPARATOR, 2)
-          if parts.length == 2
-            map[symbolize(parts[0])] << symbolize(parts[1])
-          else
-            map[NO_NAMESPACE] << symbolize(parts[0])
-          end
-        end
-      end
-    end
-
-    def scope_string(ns, scope)
-      if ns == NO_NAMESPACE
-        scope.to_s
-      else
-        [ns, scope].join(NAMESPACE_SEPARATOR)
-      end
-    end
-
-    def empty_map
-      @empty_map ||= Hash.new do |hash, key|
-        hash[key] = []
-      end
-    end
 
     def symbolize(value)
       case value
