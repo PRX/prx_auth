@@ -155,4 +155,18 @@ describe PrxAuth::ResourceMap do
       assert map.contains?("*", :wild)
     end
   end
+
+  describe '#as_json' do
+    it 'does not include wildcard key if list is empty' do
+      map = new_map("foo" => "asdf")
+      refute map.as_json.has_key?('*')
+      map2 = new_map("foo" => "asdf", "*" => "")
+      refute map2.as_json.has_key?('*')
+    end
+
+    it 'includes the wildcard key if the list is not empty' do
+      map = new_map("*" => "asdf")
+      assert map.as_json.has_key?('*')
+    end
+  end
 end

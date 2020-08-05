@@ -1,13 +1,20 @@
 module PrxAuth
-  class ResourceMap
+  class ResourceMap < Hash
     WILDCARD_KEY = '*'
 
     def initialize(mapped_values)
+      super() do |hash, key|
+        if key == WILDCARD_KEY
+          @wildcard
+        else
+          nil
+        end
+      end
       input = mapped_values.clone
       @wildcard = ScopeList.new(input.delete(WILDCARD_KEY)||'')
-      @map = Hash[input.map do |(key, values)|
-        [key, ScopeList.new(values)]
-      end]
+      input.each do |(key, values)|
+        self[key.to_s] = ScopeList.new(values)
+      end
     end
 
     def contains?(resource, namespace=nil, scope=nil)
@@ -18,7 +25,7 @@ module PrxAuth
       
         @wildcard.contains?(namespace, scope)
       else
-        mapped_resource = @map[resource]
+        mapped_resource = self[resource]
         
         if mapped_resource && !namespace.nil?
           mapped_resource.contains?(namespace, scope) || @wildcard.contains?(namespace, scope)
@@ -32,7 +39,7 @@ module PrxAuth
 
     def condense
       condensed_wildcard = @wildcard.condense
-      condensed_map = Hash[@map.map do |resource, list|
+      condensed_map = Hash[map do |resource, list|
         [resource, (list - condensed_wildcard).condense]
       end]
       ResourceMap.new(condensed_map.merge(WILDCARD_KEY => condensed_wildcard))
@@ -63,7 +70,7 @@ module PrxAuth
         result[resource] = list_for_resource(resource) - (other_wildcard + other_map.list_for_resource(resource))
       end
 
-      if @wildcard
+      if @wildcard.length
         result[WILDCARD_KEY] = @wildcard - other_wildcard
       end
 
@@ -87,7 +94,7 @@ module PrxAuth
                       end
       end
 
-      if @wildcard
+      if @wildcard.length > 0
         result[WILDCARD_KEY] = @wildcard - (@wildcard - other_wildcard)
       end
 
@@ -95,20 +102,14 @@ module PrxAuth
     end
 
     def as_json(opts={})
-      @map.merge(WILDCARD_KEY => @wildcard).as_json(opts)
-    end
-
-    def freeze
-      @map.freeze
-      @wildcard.freeze
-      self
+      super(opts).merge(@wildcard.length > 0 ? {WILDCARD_KEY => @wildcard}.as_json(opts) : {})
     end
 
     def resources(namespace=nil, scope=nil)
       if namespace.nil?
-        @map.keys
+        keys
       else
-        @map.select do |name, list|
+        select do |name, list|
           list.contains?(namespace, scope) || @wildcard.contains?(namespace, scope)
         end.map(&:first)
       end
@@ -117,8 +118,7 @@ module PrxAuth
     protected
 
     def list_for_resource(resource)
-      return @wildcard if resource.to_s == WILDCARD_KEY
-      @map[resource.to_s]
+      self[resource.to_s]
     end
   end
 end
