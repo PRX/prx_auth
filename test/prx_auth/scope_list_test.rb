@@ -70,7 +70,16 @@ describe PrxAuth::ScopeList do
       sl = new_list('one two') - nil
       assert sl.contains?(:one) && sl.contains?(:two)
     end
+
+    it 'maintains dashes and capitalization in the result' do
+      sl = new_list('The-Beginning the-middle the-end') - new_list('the-Middle')
+      assert sl.to_s == 'The-Beginning the-end'
+    end
+
   end
+
+  
+
 
   describe '#+' do
     it 'adds scopes' do
