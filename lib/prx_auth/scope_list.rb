@@ -4,19 +4,15 @@ module PrxAuth
     NAMESPACE_SEPARATOR = ':'
     NO_NAMESPACE = :_
 
-    Entry = Struct.new(:namespace, :scope)
+    Entry = Struct.new(:namespace, :scope, :string)
 
     class Entry
-      def equal?(other_entry)
+      def ==(other_entry)
         namespace == other_entry.namespace && scope == other_entry.scope
       end
 
       def to_s
-        if namespaced?
-          "#{namespace}:#{scope}"
-        else
-          scope.to_s
-        end
+        string
       end
 
       def namespaced?
@@ -25,10 +21,14 @@ module PrxAuth
 
       def unnamespaced
         if namespaced?
-          Entry.new(NO_NAMESPACE, scope)
+          Entry.new(NO_NAMESPACE, scope, string.split(':').last)
         else
           self
         end
+      end
+
+      def inspect
+        "#<ScopeList::Entry \"#{to_s}\">"
       end
     end
 
@@ -47,9 +47,9 @@ module PrxAuth
 
         parts = value.split(NAMESPACE_SEPARATOR, 2)
         if parts.length == 2
-          push Entry.new(symbolize(parts[0]), symbolize(parts[1]))
+          push Entry.new(symbolize(parts[0]), symbolize(parts[1]), value)
         else
-          push Entry.new(NO_NAMESPACE, symbolize(parts[0]))
+          push Entry.new(NO_NAMESPACE, symbolize(parts[0]), value)
         end
       end
     end
@@ -57,11 +57,11 @@ module PrxAuth
     def contains?(namespace, scope=nil)
       entries = if scope.nil?
                   scope, namespace = namespace, NO_NAMESPACE 
-                  [Entry.new(namespace, symbolize(scope))]
+                  [Entry.new(namespace, symbolize(scope), nil)]
                 else
                   scope = symbolize(scope)
                   namespace = symbolize(namespace)
-                  [Entry.new(namespace, scope), Entry.new(NO_NAMESPACE, scope)]
+                  [Entry.new(namespace, scope, nil), Entry.new(NO_NAMESPACE, scope, nil)]
                 end
       
       entries.any? do |possible_match|
