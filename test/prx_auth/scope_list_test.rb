@@ -78,9 +78,6 @@ describe PrxAuth::ScopeList do
 
   end
 
-  
-
-
   describe '#+' do
     it 'adds scopes' do
       sl = new_list('one') + new_list('two')
