@@ -169,4 +169,17 @@ describe PrxAuth::ResourceMap do
       assert map.as_json.has_key?('*')
     end
   end
+
+  describe '#[]' do
+    it 'automatically stringifies' do
+      refute_nil map[123]
+    end
+  end
+
+  describe '#[]=' do
+    it 'automatically stringifies' do
+      map[789] = PrxAuth::ScopeList.new("")
+      refute_nil map["789"]
+    end
+  end
 end
