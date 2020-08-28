@@ -129,6 +129,10 @@ module PrxAuth
       self - (self - other_list)
     end
 
+    def ==(other)
+      condense.sort_by(&:to_s) == other.condense.sort_by(&:to_s)
+    end
+
     private
 
     def symbolize(value)
