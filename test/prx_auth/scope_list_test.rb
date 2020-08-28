@@ -105,4 +105,15 @@ describe PrxAuth::ScopeList do
       assert !sl.contains?(:one)
     end
   end
+
+  describe '==' do
+
+    it 'is equal when they are functionally equal' do
+      assert_equal PrxAuth::ScopeList.new("foo ns:foo bar ns2:baz"), PrxAuth::ScopeList.new("ns2:baz bar foo")
+    end
+
+    it 'is not equal when they are not functionally equal' do
+      refute_equal PrxAuth::ScopeList.new("foo bar"), PrxAuth::ScopeList.new("foo:bar bar:foo")
+    end
+  end
 end

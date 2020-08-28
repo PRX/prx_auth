@@ -37,6 +37,14 @@ module PrxAuth
       end
     end
 
+    def [](key)
+      super(key.to_s)
+    end
+
+    def []=(key, value)
+      super(key.to_s, value)
+    end
+
     def condense
       condensed_wildcard = @wildcard.condense
       condensed_map = Hash[map do |resource, list|
