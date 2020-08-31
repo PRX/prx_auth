@@ -5,7 +5,9 @@ describe Rack::PrxAuth do
   let(:prxauth) { Rack::PrxAuth.new(app) }
   let(:fake_token) { 'afawefawefawefawegstgnsrtiohnlijblublwjnvrtoign'}
   let(:env) { {'HTTP_AUTHORIZATION' => 'Bearer ' + fake_token } }
-  let(:claims) { {'sub'=>3, 'exp'=>3600, 'iat'=>Time.now.to_i, 'token_type'=>'bearer', 'scope'=>nil, 'iss'=>'id.prx.org'} }
+  let(:iat) { Time.now.to_i }
+  let(:exp) { 3600 }
+  let(:claims) { {'sub'=>3, 'exp'=>exp, 'iat'=>iat, 'token_type'=>'bearer', 'scope'=>nil, 'iss'=>'id.prx.org'} }
 
   describe '#call' do
     it 'does nothing if there is no authorization header' do
@@ -59,15 +61,47 @@ describe Rack::PrxAuth do
     end
   end
 
-  describe '#token_expired?' do
-    it 'returns true if token is expired' do
-      claims['iat'] = Time.now.to_i - 4000
+  describe '#expired?' do
 
-      assert prxauth.send(:expired?, claims) == true
+    def expired?(claims)
+      prxauth.send(:expired?, claims)
     end
 
-    it 'returns false if it is valid' do
-      assert prxauth.send(:expired?, claims) == false
+    it 'is expired if the token is issued in the future' do
+      claims['iat'] = Time.now.to_i + 3600
+
+      assert expired?(claims)
+    end
+
+    describe 'with a malformed exp' do
+      let(:exp) { 3600 }
+
+      it 'is expired if iat + exp are in the past' do
+        claims['iat'] -= 3601
+
+        assert expired?(claims)
+      end
+
+      it 'is not expired if iat + exp are in the future' do
+        claims['iat'] -= 3599
+
+        refute expired?(claims)
+      end
+    end
+
+    describe 'with a corrected exp' do
+      let(:iat) { Time.now.to_i - 3600 }
+      let(:exp) { Time.now.to_i + 1 }
+
+      it 'is not expired if exp is in the future' do
+        refute expired?(claims)
+      end
+
+      it 'is expired if exp is in the past' do
+
+        claims['exp'] = Time.now.to_i - 1
+        assert expired?(claims)
+      end
     end
   end
 
