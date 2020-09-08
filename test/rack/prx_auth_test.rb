@@ -67,23 +67,24 @@ describe Rack::PrxAuth do
       prxauth.send(:expired?, claims)
     end
 
-    it 'is expired if the token is issued in the future' do
-      claims['iat'] = Time.now.to_i + 3600
-
-      assert expired?(claims)
-    end
-
     describe 'with a malformed exp' do
+      let(:iat) { Time.now.to_i }
       let(:exp) { 3600 }
 
       it 'is expired if iat + exp are in the past' do
-        claims['iat'] -= 3601
+        claims['iat'] -= 3631
 
         assert expired?(claims)
       end
 
       it 'is not expired if iat + exp are in the future' do
-        claims['iat'] -= 3599
+        claims['iat'] = Time.now.to_i - 3599
+
+        refute expired?(claims)
+      end
+
+      it 'allows a 30s clock jitter' do
+        claims['iat'] = Time.now.to_i - 3629
 
         refute expired?(claims)
       end
@@ -97,10 +98,11 @@ describe Rack::PrxAuth do
         refute expired?(claims)
       end
 
-      it 'is expired if exp is in the past' do
-
-        claims['exp'] = Time.now.to_i - 1
+      it 'is expired if exp is in the past (with 30s jitter grace)' do
+        claims['exp'] = Time.now.to_i - 31
         assert expired?(claims)
+        claims['exp'] = Time.now.to_i - 29
+        refute expired?(claims)
       end
     end
   end
