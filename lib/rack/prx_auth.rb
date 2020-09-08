@@ -53,7 +53,12 @@ module Rack
     end
 
     def expired?(claims)
-      Time.now.to_i > (claims['iat'] + claims['exp'])
+      now = Time.now.to_i - 30 # 30 second clock jitter allowance
+      if claims['iat'] <= claims['exp']
+        now > claims['exp']
+      else
+        now > (claims['iat'] + claims['exp'])
+      end
     end
 
     def should_validate_token?(claims)
