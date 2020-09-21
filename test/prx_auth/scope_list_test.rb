@@ -104,6 +104,16 @@ describe PrxAuth::ScopeList do
       sl = new_list('one') & nil
       assert !sl.contains?(:one)
     end
+
+    it 'works when either side has non-namespaced values correctly' do
+      sl = PrxAuth::ScopeList.new('foo:bar') & PrxAuth::ScopeList.new('bar')
+      assert sl.contains?(:foo, :bar)
+      refute sl.contains?(:bar)
+
+      sl = PrxAuth::ScopeList.new('bar') & PrxAuth::ScopeList.new('foo:bar')
+      assert sl.contains?(:foo, :bar)
+      refute sl.contains?(:bar)
+    end
   end
 
   describe '==' do
