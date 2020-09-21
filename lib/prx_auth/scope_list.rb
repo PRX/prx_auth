@@ -126,7 +126,7 @@ module PrxAuth
     def &(other_list)
       return ScopeList.new('') if other_list.nil?
       
-      self - (self - other_list)
+      self - (self - other_list) + (other_list - (other_list - self))
     end
 
     def ==(other)
