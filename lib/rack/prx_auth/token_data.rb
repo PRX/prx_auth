@@ -34,7 +34,7 @@ module Rack
       end
 
       def authorized_account_ids(scope)
-        resources(scope).map(&:to_i)
+        resources(::PrxAuth::Rails.configuration.namespace, scope).map(&:to_i)
       end
 
       private
