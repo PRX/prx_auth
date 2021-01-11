@@ -41,13 +41,6 @@ describe Rack::PrxAuth::AuthValidator do
     end
   end
 
-  describe '#call' do
-
-    it 'checks if access token has expired' do
-      # TODO
-    end
-  end
-
   describe '#expired?' do
 
     def expired?(claims)
