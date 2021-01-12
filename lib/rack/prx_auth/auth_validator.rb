@@ -14,15 +14,15 @@ module Rack
       end
 
       def valid?
-        begin
-          decode_token && !expired? && @certificate.valid?(token)
-        rescue JSON::JWT::InvalidFormat
-          false
-        end
+        valid_token_format? && !expired? && @certificate.valid?(token)
       end
 
       def claims
         @claims ||= decode_token
+      end
+
+      def valid_token_format?
+        decode_token.present?
       end
 
       def decode_token
