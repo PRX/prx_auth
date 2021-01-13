@@ -35,8 +35,6 @@ module Rack
       end
 
       def expired?
-        return true if claims['iat'].nil? || claims['exp'].nil?
-
         now = Time.now.to_i - 30 # 30 second clock jitter allowance
         if claims['iat'] <= claims['exp']
           now > claims['exp']
