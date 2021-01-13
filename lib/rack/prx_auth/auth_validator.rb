@@ -1,5 +1,4 @@
 require 'json/jwt'
-require 'net/http'
 
 module Rack
   class PrxAuth
