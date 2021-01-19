@@ -34,75 +34,39 @@ describe Rack::PrxAuth do
     end
 
     it 'returns 401 if verification fails' do
+      auth_validator = prxauth.build_auth_validator('sometoken')
+
       JSON::JWT.stub(:decode, claims) do
-        prxauth.stub(:valid?, false) do
-          assert prxauth.call(env) == Rack::PrxAuth::INVALID_TOKEN
+        prxauth.stub(:build_auth_validator, auth_validator) do
+          auth_validator.stub(:valid?, false) do
+            assert prxauth.call(env) == Rack::PrxAuth::INVALID_TOKEN
+          end
         end
       end
     end
 
     it 'returns 401 if access token has expired' do
+      auth_validator = prxauth.build_auth_validator('sometoken')
+
       JSON::JWT.stub(:decode, claims) do
-        prxauth.stub(:expired?, true) do
-          assert prxauth.call(env) == Rack::PrxAuth::INVALID_TOKEN
+        prxauth.stub(:build_auth_validator, auth_validator) do
+          auth_validator.stub(:expired?, true) do
+            assert prxauth.call(env) == Rack::PrxAuth::INVALID_TOKEN
+          end
         end
       end
     end
 
     it 'attaches claims to request params if verification passes' do
-      prxauth.stub(:decode_token, claims) do
-        prxauth.stub(:valid?, true) do
+      auth_validator = prxauth.build_auth_validator('sometoken')
+
+      JSON::JWT.stub(:decode, claims) do
+        prxauth.stub(:build_auth_validator, auth_validator) do
           prxauth.call(env)['prx.auth'].tap do |token|
             assert token.instance_of? Rack::PrxAuth::TokenData
             assert token.user_id == claims['sub']
           end
         end
-      end
-    end
-  end
-
-  describe '#expired?' do
-
-    def expired?(claims)
-      prxauth.send(:expired?, claims)
-    end
-
-    describe 'with a malformed exp' do
-      let(:iat) { Time.now.to_i }
-      let(:exp) { 3600 }
-
-      it 'is expired if iat + exp are in the past' do
-        claims['iat'] -= 3631
-
-        assert expired?(claims)
-      end
-
-      it 'is not expired if iat + exp are in the future' do
-        claims['iat'] = Time.now.to_i - 3599
-
-        refute expired?(claims)
-      end
-
-      it 'allows a 30s clock jitter' do
-        claims['iat'] = Time.now.to_i - 3629
-
-        refute expired?(claims)
-      end
-    end
-
-    describe 'with a corrected exp' do
-      let(:iat) { Time.now.to_i - 3600 }
-      let(:exp) { Time.now.to_i + 1 }
-
-      it 'is not expired if exp is in the future' do
-        refute expired?(claims)
-      end
-
-      it 'is expired if exp is in the past (with 30s jitter grace)' do
-        claims['exp'] = Time.now.to_i - 31
-        assert expired?(claims)
-        claims['exp'] = Time.now.to_i - 29
-        refute expired?(claims)
       end
     end
   end
@@ -114,20 +78,6 @@ describe Rack::PrxAuth do
         Rack::PrxAuth.new(app, cert_location: :location)
         assert loc == :location
       end
-    end
-  end
-
-  describe '#decode_token' do
-    it 'should return an empty result for a nil token' do
-      assert prxauth.send(:decode_token, nil) == {}
-    end
-
-    it 'should return an empty result for an empty token' do
-      assert prxauth.send(:decode_token, {}) == {}
-    end
-
-    it 'should return an empty result for a malformed token' do
-      assert prxauth.send(:decode_token, 'asdfsadfsad') == {}
     end
   end
 end

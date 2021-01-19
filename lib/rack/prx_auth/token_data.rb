@@ -32,7 +32,11 @@ module Rack
       def globally_authorized?(namespace, scope=nil)
         authorized?(::PrxAuth::ResourceMap::WILDCARD_KEY, namespace, scope)
       end
-      
+
+      def authorized_account_ids(scope)
+        resources(::PrxAuth::Rails.configuration.namespace, scope).map(&:to_i)
+      end
+
       private
 
       def unpack_aur(aur)

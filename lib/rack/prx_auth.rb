@@ -1,6 +1,7 @@
 require 'json/jwt'
 require 'rack/prx_auth/certificate'
 require 'rack/prx_auth/token_data'
+require 'rack/prx_auth/auth_validator'
 require 'prx_auth'
 
 module Rack
@@ -20,16 +21,21 @@ module Rack
       @issuer = options[:issuer] || DEFAULT_ISS
     end
 
+    def build_auth_validator(token)
+      AuthValidator.new(token, @certificate, @issuer)
+    end
+
     def call(env)
       return @app.call(env) unless env['HTTP_AUTHORIZATION']
 
       token = env['HTTP_AUTHORIZATION'].split[1]
-      claims = decode_token(token)
 
-      return @app.call(env) unless should_validate_token?(claims)
+      auth_validator = build_auth_validator(token)
 
-      if valid?(claims, token)
-        env['prx.auth'] = TokenData.new(claims)
+      return @app.call(env) unless should_validate_token?(auth_validator)
+
+      if auth_validator.valid?
+        env['prx.auth'] = TokenData.new(auth_validator.claims)
         @app.call(env)
       else
         INVALID_TOKEN
@@ -38,31 +44,8 @@ module Rack
 
     private
 
-    def valid?(claims, token)
-      !expired?(claims) && @certificate.valid?(token)
-    end
-
-    def decode_token(token)
-      return {} if token.nil?
-
-      begin
-        JSON::JWT.decode(token, :skip_verification)
-      rescue JSON::JWT::InvalidFormat
-        {}
-      end
-    end
-
-    def expired?(claims)
-      now = Time.now.to_i - 30 # 30 second clock jitter allowance
-      if claims['iat'] <= claims['exp']
-        now > claims['exp']
-      else
-        now > (claims['iat'] + claims['exp'])
-      end
-    end
-
-    def should_validate_token?(claims)
-      claims['iss'] == @issuer
+    def should_validate_token?(auth_validator)
+      auth_validator.token_issuer_matches?
     end
   end
 end
