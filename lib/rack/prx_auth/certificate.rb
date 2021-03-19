@@ -11,6 +11,7 @@ module Rack
 
       def initialize(cert_uri = nil)
         @cert_location = cert_uri.nil? ? DEFAULT_CERT_LOC : URI(cert_uri)
+        @certificate = nil
       end
 
       def valid?(token)
