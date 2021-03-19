@@ -90,12 +90,32 @@ describe Rack::PrxAuth::AuthValidator do
   end
 
   describe '#time_to_live' do
-    let(:exp) { Time.now.to_i + 999 }
+    def time_to_live(claims)
+      auth_validator.stub(:claims, claims) do
+        auth_validator.time_to_live
+      end
+    end
 
     it 'returns the ttl without any clock jitter correction' do
-      auth_validator.stub(:claims, claims) do
-        assert auth_validator.time_to_live == 999
-      end
+      claims['exp'] = Time.now.to_i + 999
+      assert_equal time_to_live(claims), 999
+    end
+
+    it 'handles missing exp' do
+      claims['exp'] = nil
+      assert_equal time_to_live(claims), 0
+    end
+
+    it 'handles missing iat' do
+      claims['iat'] = nil
+      claims['exp'] = Time.now.to_i + 999
+      assert_equal time_to_live(claims), 999
+    end
+
+    it 'handles malformed exp' do
+      claims['iat'] = Time.now.to_i
+      claims['exp'] = 999
+      assert_equal time_to_live(claims), 999
     end
   end
 

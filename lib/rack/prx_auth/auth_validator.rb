@@ -40,9 +40,9 @@ module Rack
 
       def time_to_live
         now = Time.now.to_i
-        if claims['iat'].nil? || claims['exp'].nil?
+        if claims['exp'].nil?
           0
-        elsif claims['iat'] <= claims['exp']
+        elsif claims['iat'].nil? || claims['iat'] <= claims['exp']
           claims['exp'] - now
         else
           # malformed - exp is a num-seconds offset from issued-at-time
