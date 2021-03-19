@@ -4,9 +4,9 @@ module Rack
   class PrxAuth
     class AuthValidator
 
-      attr_reader :issuer, :claims, :token
+      attr_reader :issuer, :token
 
-      def initialize(token, certificate, issuer)
+      def initialize(token, certificate = nil, issuer = nil)
         @token = token
         @certificate = certificate
         @issuer = issuer
@@ -35,11 +35,18 @@ module Rack
       end
 
       def expired?
-        now = Time.now.to_i - 30 # 30 second clock jitter allowance
-        if claims['iat'] <= claims['exp']
-          now > claims['exp']
+        (time_to_live + 30) <= 0 # 30 second clock jitter allowance
+      end
+
+      def time_to_live
+        now = Time.now.to_i
+        if claims['iat'].nil? || claims['exp'].nil?
+          0
+        elsif claims['iat'] <= claims['exp']
+          claims['exp'] - now
         else
-          now > (claims['iat'] + claims['exp'])
+          # malformed - exp is a num-seconds offset from issued-at-time
+          (claims['iat'] + claims['exp']) - now
         end
       end
 

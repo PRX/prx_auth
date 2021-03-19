@@ -9,7 +9,7 @@ describe Rack::PrxAuth::AuthValidator do
   let(:iat) { Time.now.to_i }
   let(:exp) { 3600 }
   let(:claims) { {'sub'=>3, 'exp'=>exp, 'iat'=>iat, 'token_type'=>'bearer', 'scope'=>nil, 'iss'=>'id.prx.org'} }
-  let(:certificate) { cert = Rack::PrxAuth::Certificate.new }
+  let(:certificate) { Rack::PrxAuth::Certificate.new }
 
   describe '#token_issuer_matches' do
     it 'false if the token is from another issuer' do
@@ -85,6 +85,16 @@ describe Rack::PrxAuth::AuthValidator do
         assert expired?(claims)
         claims['exp'] = Time.now.to_i - 29
         refute expired?(claims)
+      end
+    end
+  end
+
+  describe '#time_to_live' do
+    let(:exp) { Time.now.to_i + 999 }
+
+    it 'returns the ttl without any clock jitter correction' do
+      auth_validator.stub(:claims, claims) do
+        assert auth_validator.time_to_live == 999
       end
     end
   end
