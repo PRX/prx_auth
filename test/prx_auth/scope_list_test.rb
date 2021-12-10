@@ -12,7 +12,7 @@ describe PrxAuth::ScopeList do
   it 'looks up successfully for a given scope' do
     assert list.contains?('write')
   end
-  
+
   it 'scans for symbols' do
     assert list.contains?(:read)
   end
@@ -27,7 +27,7 @@ describe PrxAuth::ScopeList do
 
   describe 'with namespace' do
     let (:scopes) { 'ns1:hello ns2:goodbye aloha 1:23' }
-    
+
     it 'works for namespaced lookups' do
       assert list.contains?(:ns1, :hello)
     end
@@ -76,6 +76,11 @@ describe PrxAuth::ScopeList do
       assert sl.to_s == 'The-Beginning the-end'
     end
 
+    it 'dedups and condenses' do
+      sl = new_list('one ns1:two ns2:two one three three') - new_list('ns1:two three')
+      assert_equal sl.length, 2
+      assert_equal sl.to_s, 'one ns2:two'
+    end
   end
 
   describe '#+' do
@@ -84,6 +89,12 @@ describe PrxAuth::ScopeList do
       assert sl.kind_of? PrxAuth::ScopeList
       assert sl.contains?(:one)
       assert sl.contains?(:two)
+    end
+
+    it 'dedups and condenses' do
+      sl = new_list('one ns1:one two') + new_list('two three') + new_list('two')
+      assert_equal sl.length, 3
+      assert_equal sl.to_s, 'one two three'
     end
 
     it 'accepts nil' do
