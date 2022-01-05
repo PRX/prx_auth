@@ -42,7 +42,7 @@ module PrxAuth
 
     def initialize(list)
       @string = list
-      @string.split(SCOPE_SEPARATOR).each do |value|
+      @string.split(SCOPE_SEPARATOR).uniq.each do |value|
         next if value.length < 1
 
         parts = value.split(NAMESPACE_SEPARATOR, 2)
@@ -56,21 +56,21 @@ module PrxAuth
 
     def contains?(namespace, scope=nil)
       entries = if scope.nil?
-                  scope, namespace = namespace, NO_NAMESPACE 
+                  scope, namespace = namespace, NO_NAMESPACE
                   [Entry.new(namespace, symbolize(scope), nil)]
                 else
                   scope = symbolize(scope)
                   namespace = symbolize(namespace)
                   [Entry.new(namespace, scope, nil), Entry.new(NO_NAMESPACE, scope, nil)]
                 end
-      
+
       entries.any? do |possible_match|
         include?(possible_match)
       end
     end
 
     def to_s
-      @string
+      entries.join(SCOPE_SEPARATOR)
     end
 
     def condense
@@ -125,7 +125,7 @@ module PrxAuth
 
     def &(other_list)
       return ScopeList.new('') if other_list.nil?
-      
+
       self - (self - other_list) + (other_list - (other_list - self))
     end
 
