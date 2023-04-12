@@ -1,17 +1,17 @@
-require 'json/jwt'
-require 'rack/prx_auth/certificate'
-require 'rack/prx_auth/token_data'
-require 'rack/prx_auth/auth_validator'
-require 'prx_auth'
+require "json/jwt"
+require "rack/prx_auth/certificate"
+require "rack/prx_auth/token_data"
+require "rack/prx_auth/auth_validator"
+require "prx_auth"
 
 module Rack
   class PrxAuth
     INVALID_TOKEN = [
-      401, {'Content-Type' => 'application/json'},
-      [{status: 401, error: 'Invalid JSON Web Token'}.to_json]
+      401, {"Content-Type" => "application/json"},
+      [{status: 401, error: "Invalid JSON Web Token"}.to_json]
     ]
 
-    DEFAULT_ISS = 'id.prx.org'
+    DEFAULT_ISS = "id.prx.org"
 
     attr_reader :issuer
 
@@ -26,16 +26,16 @@ module Rack
     end
 
     def call(env)
-      return @app.call(env) unless env['HTTP_AUTHORIZATION']
+      return @app.call(env) unless env["HTTP_AUTHORIZATION"]
 
-      token = env['HTTP_AUTHORIZATION'].split[1]
+      token = env["HTTP_AUTHORIZATION"].split[1]
 
       auth_validator = build_auth_validator(token)
 
       return @app.call(env) unless should_validate_token?(auth_validator)
 
       if auth_validator.valid?
-        env['prx.auth'] = TokenData.new(auth_validator.claims)
+        env["prx.auth"] = TokenData.new(auth_validator.claims)
         @app.call(env)
       else
         INVALID_TOKEN

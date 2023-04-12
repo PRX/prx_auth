@@ -1,4 +1,4 @@
-require 'prx_auth/resource_map'
+require "prx_auth/resource_map"
 
 module Rack
   class PrxAuth
@@ -8,28 +8,28 @@ module Rack
       def initialize(attrs = {})
         @attributes = attrs
 
-        @authorized_resources = ::PrxAuth::ResourceMap.new(unpack_aur(attrs['aur'])).freeze
-        
-        if attrs['scope']
-          @scopes = attrs['scope'].split(' ').freeze
+        @authorized_resources = ::PrxAuth::ResourceMap.new(unpack_aur(attrs["aur"])).freeze
+
+        @scopes = if attrs["scope"]
+          attrs["scope"].split(" ").freeze
         else
-          @scopes = [].freeze
+          [].freeze
         end
       end
 
-      def resources(namespace=nil, scope=nil)
+      def resources(namespace = nil, scope = nil)
         @authorized_resources.resources(namespace, scope)
       end
 
       def user_id
-        @attributes['sub']
+        @attributes["sub"]
       end
 
-      def authorized?(resource, namespace=nil, scope=nil)
+      def authorized?(resource, namespace = nil, scope = nil)
         @authorized_resources.contains?(resource, namespace, scope)
       end
 
-      def globally_authorized?(namespace, scope=nil)
+      def globally_authorized?(namespace, scope = nil)
         authorized?(::PrxAuth::ResourceMap::WILDCARD_KEY, namespace, scope)
       end
 
@@ -43,8 +43,8 @@ module Rack
         return {} if aur.nil?
 
         aur.clone.tap do |result|
-          unless result['$'].nil?
-            result.delete('$').each do |role, resources|
+          unless result["$"].nil?
+            result.delete("$").each do |role, resources|
               resources.each do |res|
                 result[res.to_s] = role
               end

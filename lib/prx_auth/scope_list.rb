@@ -1,14 +1,14 @@
 module PrxAuth
   class ScopeList < Array
-    SCOPE_SEPARATOR = ' '
-    NAMESPACE_SEPARATOR = ':'
+    SCOPE_SEPARATOR = " "
+    NAMESPACE_SEPARATOR = ":"
     NO_NAMESPACE = :_
 
     Entry = Struct.new(:namespace, :scope, :string)
 
     class Entry
-      def ==(other_entry)
-        namespace == other_entry.namespace && scope == other_entry.scope
+      def ==(other)
+        namespace == other.namespace && scope == other.scope
       end
 
       def to_s
@@ -21,21 +21,21 @@ module PrxAuth
 
       def unnamespaced
         if namespaced?
-          Entry.new(NO_NAMESPACE, scope, string.split(':').last)
+          Entry.new(NO_NAMESPACE, scope, string.split(":").last)
         else
           self
         end
       end
 
       def inspect
-        "#<ScopeList::Entry \"#{to_s}\">"
+        "#<ScopeList::Entry \"#{self}\">"
       end
     end
 
     def self.new(list)
       case list
       when PrxAuth::ScopeList then list
-      when Array then super(list.join(' '))
+      when Array then super(list.join(" "))
       else super(list)
       end
     end
@@ -54,15 +54,15 @@ module PrxAuth
       end
     end
 
-    def contains?(namespace, scope=nil)
+    def contains?(namespace, scope = nil)
       entries = if scope.nil?
-                  scope, namespace = namespace, NO_NAMESPACE
-                  [Entry.new(namespace, symbolize(scope), nil)]
-                else
-                  scope = symbolize(scope)
-                  namespace = symbolize(namespace)
-                  [Entry.new(namespace, scope, nil), Entry.new(NO_NAMESPACE, scope, nil)]
-                end
+        scope, namespace = namespace, NO_NAMESPACE
+        [Entry.new(namespace, symbolize(scope), nil)]
+      else
+        scope = symbolize(scope)
+        namespace = symbolize(namespace)
+        [Entry.new(namespace, scope, nil), Entry.new(NO_NAMESPACE, scope, nil)]
+      end
 
       entries.any? do |possible_match|
         include?(possible_match)
@@ -92,18 +92,18 @@ module PrxAuth
       end
     end
 
-    def as_json(opts=())
+    def as_json(opts = ()) # standard:disable Lint/EmptyExpression
       to_s.as_json(opts)
     end
 
-    def -(other_scope_list)
-      return self if other_scope_list.nil?
+    def -(other)
+      return self if other.nil?
 
       tripped = false
       result = []
 
       each do |entry|
-        if other_scope_list.include?(entry) || other_scope_list.include?(entry.unnamespaced)
+        if other.include?(entry) || other.include?(entry.unnamespaced)
           tripped = true
         else
           result << entry
@@ -117,16 +117,16 @@ module PrxAuth
       end
     end
 
-    def +(other_list)
-      return self if other_list.nil?
+    def +(other)
+      return self if other.nil?
 
-      ScopeList.new([to_s, other_list.to_s].join(SCOPE_SEPARATOR)).condense
+      ScopeList.new([to_s, other.to_s].join(SCOPE_SEPARATOR)).condense
     end
 
-    def &(other_list)
-      return ScopeList.new('') if other_list.nil?
+    def &(other)
+      return ScopeList.new("") if other.nil?
 
-      self - (self - other_list) + (other_list - (other_list - self))
+      self - (self - other) + (other - (other - self))
     end
 
     def ==(other)
@@ -138,7 +138,7 @@ module PrxAuth
     def symbolize(value)
       case value
       when Symbol then value
-      when String then value.downcase.gsub('-', '_').intern
+      when String then value.downcase.tr("-", "_").intern
       else symbolize value.to_s
       end
     end
