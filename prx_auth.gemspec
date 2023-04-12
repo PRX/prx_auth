@@ -23,6 +23,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "coveralls", "~> 0"
   spec.add_development_dependency "guard"
   spec.add_development_dependency "guard-minitest"
+  spec.add_development_dependency "standard"
 
   spec.add_dependency "rack", ">= 1.5.2"
   spec.add_dependency "json", ">= 1.8.1"
