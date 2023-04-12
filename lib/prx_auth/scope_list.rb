@@ -92,7 +92,7 @@ module PrxAuth
       end
     end
 
-    def as_json(opts = ())
+    def as_json(opts = ()) # standard:disable Lint/EmptyExpression
       to_s.as_json(opts)
     end
 
