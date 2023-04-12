@@ -1,9 +1,8 @@
-require 'json/jwt'
+require "json/jwt"
 
 module Rack
   class PrxAuth
     class AuthValidator
-
       attr_reader :issuer, :token
 
       def initialize(token, certificate = nil, issuer = nil)
@@ -40,18 +39,18 @@ module Rack
 
       def time_to_live
         now = Time.now.to_i
-        if claims['exp'].nil?
+        if claims["exp"].nil?
           0
-        elsif claims['iat'].nil? || claims['iat'] <= claims['exp']
-          claims['exp'] - now
+        elsif claims["iat"].nil? || claims["iat"] <= claims["exp"]
+          claims["exp"] - now
         else
           # malformed - exp is a num-seconds offset from issued-at-time
-          (claims['iat'] + claims['exp']) - now
+          (claims["iat"] + claims["exp"]) - now
         end
       end
 
       def token_issuer_matches?
-        claims['iss'] == @issuer
+        claims["iss"] == @issuer
       end
     end
   end
