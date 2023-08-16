@@ -43,6 +43,15 @@ module PrxAuth
       super(key.to_s, value)
     end
 
+    def except!(*keys)
+      keys.each { |key| delete(key.to_s) }
+      self
+    end
+
+    def except(*keys)
+      dup.except!(*keys)
+    end
+
     def condense
       condensed_wildcard = @wildcard.condense
       condensed_map = map do |resource, list|

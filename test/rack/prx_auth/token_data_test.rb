@@ -97,5 +97,24 @@ describe Rack::PrxAuth::TokenData do
         end
       end
     end
+
+    describe "#except" do
+      let(:token) { Rack::PrxAuth::TokenData.new("aur" => aur) }
+      let(:aur) { {"123" => "admin ns1:namespaced", "456" => "member"} }
+
+      it "removes resources from the aur" do
+        token2 = token.except(123)
+
+        assert token.authorized?(123, "admin")
+        assert token.authorized?(456, "member")
+
+        refute token2.authorized?(123, "admin")
+        assert token2.authorized?(456, "member")
+
+        # the ! version modifies the token
+        token2.except!(456)
+        refute token2.authorized?(456, "member")
+      end
+    end
   end
 end
