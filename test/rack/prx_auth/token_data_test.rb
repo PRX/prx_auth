@@ -116,5 +116,23 @@ describe Rack::PrxAuth::TokenData do
         refute token2.authorized?(456, "member")
       end
     end
+
+    describe "#empty_resources?" do
+      it "checks if the user has access to any resources" do
+        token = Rack::PrxAuth::TokenData.new("aur" => {"123" => "anything"})
+        refute token.empty_resources?
+        assert token.except("123").empty_resources?
+      end
+
+      it "checks for empty scopes" do
+        token = Rack::PrxAuth::TokenData.new("aur" => {"123" => ""})
+        assert token.empty_resources?
+      end
+
+      it "is not empty with wildcard auth" do
+        token = Rack::PrxAuth::TokenData.new("aur" => {"*" => "anything"})
+        refute token.empty_resources?
+      end
+    end
   end
 end

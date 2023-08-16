@@ -52,6 +52,10 @@ module PrxAuth
       dup.except!(*keys)
     end
 
+    def empty?
+      @wildcard.empty? && (super || values.all?(&:empty?))
+    end
+
     def condense
       condensed_wildcard = @wildcard.condense
       condensed_map = map do |resource, list|

@@ -46,6 +46,10 @@ module Rack
         dup.except!(*resources)
       end
 
+      def empty_resources?
+        @authorized_resources.empty?
+      end
+
       private
 
       def unpack_aur(aur)
