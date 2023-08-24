@@ -181,4 +181,17 @@ describe PrxAuth::ResourceMap do
       refute_nil map["789"]
     end
   end
+
+  describe "#except" do
+    it "removes keys" do
+      map2 = map.except(123)
+
+      assert_equal ["123", "456"], map.keys
+      assert_equal ["456"], map2.keys
+
+      # the ! version modifies the map
+      map2.except!("456")
+      assert_equal [], map2.keys
+    end
+  end
 end

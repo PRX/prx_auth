@@ -37,6 +37,19 @@ module Rack
         resources(::PrxAuth::Rails.configuration.namespace, scope).map(&:to_i)
       end
 
+      def except!(*resources)
+        @authorized_resources = @authorized_resources.except(*resources)
+        self
+      end
+
+      def except(*resources)
+        dup.except!(*resources)
+      end
+
+      def empty_resources?
+        @authorized_resources.empty?
+      end
+
       private
 
       def unpack_aur(aur)

@@ -97,5 +97,42 @@ describe Rack::PrxAuth::TokenData do
         end
       end
     end
+
+    describe "#except" do
+      let(:token) { Rack::PrxAuth::TokenData.new("aur" => aur) }
+      let(:aur) { {"123" => "admin ns1:namespaced", "456" => "member"} }
+
+      it "removes resources from the aur" do
+        token2 = token.except(123)
+
+        assert token.authorized?(123, "admin")
+        assert token.authorized?(456, "member")
+
+        refute token2.authorized?(123, "admin")
+        assert token2.authorized?(456, "member")
+
+        # the ! version modifies the token
+        token2.except!(456)
+        refute token2.authorized?(456, "member")
+      end
+    end
+
+    describe "#empty_resources?" do
+      it "checks if the user has access to any resources" do
+        token = Rack::PrxAuth::TokenData.new("aur" => {"123" => "anything"})
+        refute token.empty_resources?
+        assert token.except("123").empty_resources?
+      end
+
+      it "checks for empty scopes" do
+        token = Rack::PrxAuth::TokenData.new("aur" => {"123" => ""})
+        assert token.empty_resources?
+      end
+
+      it "is not empty with wildcard auth" do
+        token = Rack::PrxAuth::TokenData.new("aur" => {"*" => "anything"})
+        refute token.empty_resources?
+      end
+    end
   end
 end
