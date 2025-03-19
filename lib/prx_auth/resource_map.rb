@@ -121,7 +121,7 @@ module PrxAuth
     end
 
     def as_json(opts = {})
-      super(opts).merge((@wildcard.length > 0) ? {WILDCARD_KEY => @wildcard}.as_json(opts) : {})
+      super.merge((@wildcard.length > 0) ? {WILDCARD_KEY => @wildcard}.as_json(opts) : {})
     end
 
     def resources(namespace = nil, scope = nil)

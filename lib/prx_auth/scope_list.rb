@@ -36,7 +36,7 @@ module PrxAuth
       case list
       when PrxAuth::ScopeList then list
       when Array then super(list.join(" "))
-      else super(list)
+      else super
       end
     end
 
