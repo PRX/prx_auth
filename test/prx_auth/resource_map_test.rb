@@ -153,6 +153,11 @@ describe PrxAuth::ResourceMap do
       assert !map.contains?("one", :four) && !map.contains?("two", :four)
       assert map.contains?("*", :wild)
     end
+
+    it "works with global scoped wildcards" do
+      map = new_map("*" => "something") & new_map("*" => "ns1:something")
+      assert map.contains?("*", "ns1", :something)
+    end
   end
 
   describe "#as_json" do

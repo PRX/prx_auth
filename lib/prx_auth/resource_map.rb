@@ -113,15 +113,15 @@ module PrxAuth
         end
       end
 
-      if @wildcard.length > 0
-        result[WILDCARD_KEY] = @wildcard - (@wildcard - other_wildcard)
+      if @wildcard.length > 0 || other_wildcard.length > 0
+        result[WILDCARD_KEY] = @wildcard & other_wildcard
       end
 
       ResourceMap.new(result).condense
     end
 
     def as_json(opts = {})
-      super(opts).merge((@wildcard.length > 0) ? {WILDCARD_KEY => @wildcard}.as_json(opts) : {})
+      super.merge((@wildcard.length > 0) ? {WILDCARD_KEY => @wildcard}.as_json(opts) : {})
     end
 
     def resources(namespace = nil, scope = nil)

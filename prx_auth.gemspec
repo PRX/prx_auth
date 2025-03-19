@@ -24,8 +24,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "guard"
   spec.add_development_dependency "guard-minitest"
   spec.add_development_dependency "pry"
-  spec.add_development_dependency "pry-byebug"
   spec.add_development_dependency "standard"
+  spec.add_development_dependency "m"
 
   spec.add_dependency "rack", ">= 1.5.2"
   spec.add_dependency "json", ">= 1.8.1"
