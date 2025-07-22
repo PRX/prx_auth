@@ -25,6 +25,14 @@ module Rack
         @attributes["sub"]
       end
 
+      def issued_at
+        @attributes["iat"]
+      end
+
+      def expiration_time
+        @attributes["exp"]
+      end
+
       def authorized?(resource, namespace = nil, scope = nil)
         @authorized_resources.contains?(resource, namespace, scope)
       end
