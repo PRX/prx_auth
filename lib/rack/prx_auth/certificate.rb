@@ -36,10 +36,14 @@ module Rack
       end
 
       def fetch
-        certs = JSON.parse(Net::HTTP.get(cert_location))
+        certs = JSON.parse(fetch_http)
         cert_string = certs["certificates"].values[0]
         @refresh_at = Time.now.to_i + EXPIRES_IN
         OpenSSL::X509::Certificate.new(cert_string)
+      end
+
+      def fetch_http
+        Net::HTTP.get(cert_location)
       end
 
       def needs_refresh?

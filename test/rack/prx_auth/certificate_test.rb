@@ -1,7 +1,8 @@
 require "test_helper"
 
 describe Rack::PrxAuth::Certificate do
-  let(:subject) { Rack::PrxAuth::Certificate.new }
+  let(:cert_uri) { "http://example.com/certs" }
+  let(:subject) { Rack::PrxAuth::Certificate.new(cert_uri) }
   let(:certificate) { subject }
 
   describe "#initialize" do
@@ -11,7 +12,8 @@ describe Rack::PrxAuth::Certificate do
     end
 
     it "defaults to DEFAULT_CERT_LOC" do
-      assert certificate.cert_location == Rack::PrxAuth::Certificate::DEFAULT_CERT_LOC
+      cert = Rack::PrxAuth::Certificate.new
+      assert cert.cert_location == Rack::PrxAuth::Certificate::DEFAULT_CERT_LOC
     end
   end
 
@@ -66,22 +68,22 @@ describe Rack::PrxAuth::Certificate do
   end
 
   describe "#fetch" do
+    let(:fake_json) { "{\"certificates\":{\"asdf\":\"the-cert-content\"}}" }
+
     it "pulls from `#cert_location`" do
-      Net::HTTP.stub(:get, ->(x) { "{\"certificates\":{\"asdf\":\"#{x}\"}}" }) do
-        OpenSSL::X509::Certificate.stub(:new, ->(x) { x }) do
-          certificate.stub(:cert_location, "a://fake.url/here") do
-            assert certificate.send(:fetch) == "a://fake.url/here"
-          end
-        end
+      stub_request(:get, cert_uri).to_return(body: fake_json)
+
+      OpenSSL::X509::Certificate.stub(:new, ->(x) { x }) do
+        assert_equal "the-cert-content", certificate.send(:fetch)
       end
     end
 
     it "sets the expiration value" do
-      Net::HTTP.stub(:get, ->(x) { "{\"certificates\":{\"asdf\":\"#{x}\"}}" }) do
-        OpenSSL::X509::Certificate.stub(:new, ->(_) { Struct.new(:not_after).new(Time.now + 10000) }) do
-          certificate.send :certificate
-          assert !certificate.send(:needs_refresh?)
-        end
+      stub_request(:get, cert_uri).to_return(body: fake_json)
+
+      OpenSSL::X509::Certificate.stub(:new, ->(_) { Struct.new(:not_after).new(Time.now + 10000) }) do
+        certificate.send :certificate
+        assert !certificate.send(:needs_refresh?)
       end
     end
   end
