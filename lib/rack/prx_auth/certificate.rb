@@ -42,8 +42,20 @@ module Rack
         OpenSSL::X509::Certificate.new(cert_string)
       end
 
-      def fetch_http
-        Net::HTTP.get(cert_location)
+      def fetch_http(retries = 2)
+        host = cert_location.host
+        port = cert_location.port
+        path = cert_location.path
+        ssl = cert_location.scheme == "https"
+        res = Net::HTTP.start(host, port, use_ssl: ssl) { |http| http.request_get(path) }
+
+        if res.is_a?(Net::HTTPSuccess)
+          res.body
+        elsif res.code.to_i >= 500 && retries > 0
+          fetch_http(retries - 1)
+        else
+          raise "Got #{res.code} from #{cert_location}"
+        end
       end
 
       def needs_refresh?

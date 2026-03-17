@@ -86,6 +86,33 @@ describe Rack::PrxAuth::Certificate do
         assert !certificate.send(:needs_refresh?)
       end
     end
+
+    it "retries 5XX errors" do
+      stub_request(:get, cert_uri)
+        .to_return(status: 502)
+        .to_return(status: 504)
+        .to_return(status: 200, body: TEST_CERT_JSON)
+
+      assert_instance_of OpenSSL::X509::Certificate, certificate.send(:fetch)
+    end
+
+    it "raises other errors" do
+      stub_request(:get, cert_uri)
+        .to_return(status: 501)
+        .to_return(status: 502)
+        .to_return(status: 503)
+        .to_return(status: 504)
+
+      err = assert_raises(RuntimeError) { certificate.send(:fetch) }
+      assert_equal "Got 503 from #{cert_uri}", err.message
+    end
+
+    it "runs out of retries" do
+      stub_request(:get, cert_uri).to_return(status: 502).to_return(status: 401)
+
+      err = assert_raises(RuntimeError) { certificate.send(:fetch) }
+      assert_equal "Got 401 from #{cert_uri}", err.message
+    end
   end
 
   describe "#expired?" do
