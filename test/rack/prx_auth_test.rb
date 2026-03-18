@@ -60,6 +60,8 @@ describe Rack::PrxAuth do
     it "attaches claims to request params if verification passes" do
       auth_validator = prxauth.build_auth_validator("sometoken")
 
+      stub_request(:get, Rack::PrxAuth::Certificate::DEFAULT_CERT_LOC).to_return(body: TEST_CERT_JSON)
+
       JSON::JWT.stub(:decode, claims) do
         prxauth.stub(:build_auth_validator, auth_validator) do
           prxauth.call(env)["prx.auth"].tap do |token|

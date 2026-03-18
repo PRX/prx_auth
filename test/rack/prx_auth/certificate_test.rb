@@ -1,7 +1,8 @@
 require "test_helper"
 
 describe Rack::PrxAuth::Certificate do
-  let(:subject) { Rack::PrxAuth::Certificate.new }
+  let(:cert_uri) { "http://example.com/certs" }
+  let(:subject) { Rack::PrxAuth::Certificate.new(cert_uri) }
   let(:certificate) { subject }
 
   describe "#initialize" do
@@ -11,7 +12,8 @@ describe Rack::PrxAuth::Certificate do
     end
 
     it "defaults to DEFAULT_CERT_LOC" do
-      assert certificate.cert_location == Rack::PrxAuth::Certificate::DEFAULT_CERT_LOC
+      cert = Rack::PrxAuth::Certificate.new
+      assert cert.cert_location == Rack::PrxAuth::Certificate::DEFAULT_CERT_LOC
     end
   end
 
@@ -66,23 +68,50 @@ describe Rack::PrxAuth::Certificate do
   end
 
   describe "#fetch" do
+    let(:fake_json) { "{\"certificates\":{\"asdf\":\"the-cert-content\"}}" }
+
     it "pulls from `#cert_location`" do
-      Net::HTTP.stub(:get, ->(x) { "{\"certificates\":{\"asdf\":\"#{x}\"}}" }) do
-        OpenSSL::X509::Certificate.stub(:new, ->(x) { x }) do
-          certificate.stub(:cert_location, "a://fake.url/here") do
-            assert certificate.send(:fetch) == "a://fake.url/here"
-          end
-        end
+      stub_request(:get, cert_uri).to_return(body: fake_json)
+
+      OpenSSL::X509::Certificate.stub(:new, ->(x) { x }) do
+        assert_equal "the-cert-content", certificate.send(:fetch)
       end
     end
 
     it "sets the expiration value" do
-      Net::HTTP.stub(:get, ->(x) { "{\"certificates\":{\"asdf\":\"#{x}\"}}" }) do
-        OpenSSL::X509::Certificate.stub(:new, ->(_) { Struct.new(:not_after).new(Time.now + 10000) }) do
-          certificate.send :certificate
-          assert !certificate.send(:needs_refresh?)
-        end
+      stub_request(:get, cert_uri).to_return(body: fake_json)
+
+      OpenSSL::X509::Certificate.stub(:new, ->(_) { Struct.new(:not_after).new(Time.now + 10000) }) do
+        certificate.send :certificate
+        assert !certificate.send(:needs_refresh?)
       end
+    end
+
+    it "retries 5XX errors" do
+      stub_request(:get, cert_uri)
+        .to_return(status: 502)
+        .to_return(status: 504)
+        .to_return(status: 200, body: TEST_CERT_JSON)
+
+      assert_equal TEST_CERT_JSON, certificate.send(:fetch_http, 2, 0)
+    end
+
+    it "raises other errors" do
+      stub_request(:get, cert_uri)
+        .to_return(status: 501)
+        .to_return(status: 502)
+        .to_return(status: 503)
+        .to_return(status: 504)
+
+      err = assert_raises(RuntimeError) { certificate.send(:fetch_http, 2, 0) }
+      assert_equal "Got 503 from #{cert_uri}", err.message
+    end
+
+    it "runs out of retries" do
+      stub_request(:get, cert_uri).to_return(status: 502).to_return(status: 401)
+
+      err = assert_raises(RuntimeError) { certificate.send(:fetch_http, 2, 0) }
+      assert_equal "Got 401 from #{cert_uri}", err.message
     end
   end
 
