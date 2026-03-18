@@ -42,7 +42,7 @@ module Rack
         OpenSSL::X509::Certificate.new(cert_string)
       end
 
-      def fetch_http(retries = 2)
+      def fetch_http(retries = 2, sleep_seconds = 0.5)
         host = cert_location.host
         port = cert_location.port
         path = cert_location.path
@@ -52,7 +52,8 @@ module Rack
         if res.is_a?(Net::HTTPSuccess)
           res.body
         elsif res.code.to_i >= 500 && retries > 0
-          fetch_http(retries - 1)
+          sleep sleep_seconds
+          fetch_http(retries - 1, sleep_seconds)
         else
           raise "Got #{res.code} from #{cert_location}"
         end

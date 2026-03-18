@@ -93,7 +93,7 @@ describe Rack::PrxAuth::Certificate do
         .to_return(status: 504)
         .to_return(status: 200, body: TEST_CERT_JSON)
 
-      assert_instance_of OpenSSL::X509::Certificate, certificate.send(:fetch)
+      assert_equal TEST_CERT_JSON, certificate.send(:fetch_http, 2, 0)
     end
 
     it "raises other errors" do
@@ -103,14 +103,14 @@ describe Rack::PrxAuth::Certificate do
         .to_return(status: 503)
         .to_return(status: 504)
 
-      err = assert_raises(RuntimeError) { certificate.send(:fetch) }
+      err = assert_raises(RuntimeError) { certificate.send(:fetch_http, 2, 0) }
       assert_equal "Got 503 from #{cert_uri}", err.message
     end
 
     it "runs out of retries" do
       stub_request(:get, cert_uri).to_return(status: 502).to_return(status: 401)
 
-      err = assert_raises(RuntimeError) { certificate.send(:fetch) }
+      err = assert_raises(RuntimeError) { certificate.send(:fetch_http, 2, 0) }
       assert_equal "Got 401 from #{cert_uri}", err.message
     end
   end
